@@ -7,21 +7,17 @@ import MenuBar from './MenuBar';
 import Settings, { SettingsLimits } from './Settings';
 import NumericInput from './NumericInput';
 
-// MODIFIED: New step titles with consolidated tank data in step 1
+// MODIFIED: Updated step titles with new panel structure
 const STEP_TITLES = [
   "Dati serbatoio completi",                    // 0 - Consolidated: P0, capacity, temperature, fill%
-  "Selezionare pressione target",               // 1 - Moved from step 3
-  "Verifica automatica gas residuo bombole",   // 2 - Moved from step 4
-  "Attivare batteria/PLC/monitor/Vallen",      // 3 - Consolidated step 5+6
-  "GE warm-up e regime operativo",              // 4 - Consolidated step 6+7
-  "Attivare utenze (compressore/essiccatore/gen N₂)", // 5 - Moved from step 7
-  "Avvio pressurizzazione automatica",         // 6 - Moved from step 8
-  "Stasi stabilizzazione",                      // 7 - Moved from step 9
-  "Depressurizzazione in torcia",              // 8 - Moved from step 10
-  "Scarico automatico linee",                  // 9 - Moved from step 11
-  "Scarico linea generatore",                  // 10 - Moved from step 12
-  "Checklist finale",                          // 11 - Moved from step 13
-  "Processo completato",                       // 12 - Moved from step 14
+  "Selezionare pressione target",               // 1 - With preset levels 12/14/16 bar + custom
+  "Scelta bombole",                            // 2 - Individual bottle selection and configuration
+  "Verifiche iniziali",                        // 3 - Vallen setup and sensor checks
+  "Gruppo Elettrogeno",                        // 4 - GE startup sequence with progress bar
+  "Attivare utenze",                           // 5 - Single checkbox for all utilities
+  "Avvio pressurizzazione automatica",        // 6 - Pressurization start
+  "Processo automatico e spegnimento",         // 7 - Consolidated: stasis + depressurization + discharge + GE shutdown
+  "Salvataggio e conclusione",                 // 8 - Final save/print/terminate options
 ] as const;
 
 // Wizard HMI sequenziale – simulazione con rampa pressione + controllo automatico bombole N₂
@@ -34,13 +30,31 @@ export default function App() {
   const [temperatura, setTemperatura] = useState<number | "">("");  // Now "temperatura serbatoio"
   const [riempPerc, setRiempPerc] = useState<number | "">(""); // % di riempimento
   const [Pfinale, setPfinale] = useState<number | "">("");
+  const [presetPressureLevel, setPresetPressureLevel] = useState<string>("custom"); // "12", "14", "16", "custom"
 
-  // Alimentazioni/strumenti
-  const [batteriaOn, setBatteriaOn] = useState(false);
-  const [plcOn, setPlcOn] = useState(false);
-  const [monitorPressOn, setMonitorPressOn] = useState(false);
-  const [monitorVallenOn, setMonitorVallenOn] = useState(false);
-  const [vallenReady, setVallenReady] = useState(false);
+  // Bombole configuration - NEW FOR PANEL 2
+  const [bombola1, setBombola1] = useState({ used: false, pressure: 180, volume: 50 });
+  const [bombola2, setBombola2] = useState({ used: false, pressure: 180, volume: 50 });
+  const [bombola3, setBombola3] = useState({ used: false, pressure: 180, volume: 50 });
+
+  // Verifiche iniziali - MODIFIED FOR PANEL 3
+  const [setupVallenLoaded, setSetupVallenLoaded] = useState(false);
+  const [sensorsInstalled, setSensorsInstalled] = useState(false);
+  const [sensorsWorking, setSensorsWorking] = useState(false);
+  const [backgroundNoiseMonitored, setBackgroundNoiseMonitored] = useState(false);
+
+  // GE startup sequence - MODIFIED FOR PANEL 4
+  const [geStarted, setGeStarted] = useState(false);
+  const [geWarmupComplete, setGeWarmupComplete] = useState(false);
+  const [geOperational, setGeOperational] = useState(false);
+
+  // Utilities - SIMPLIFIED FOR PANEL 5
+  const [allUtilitiesOn, setAllUtilitiesOn] = useState(false);
+
+  // Processo automatico - NEW FOR CONSOLIDATED PANEL 7
+  const [processoAutomaticoStarted, setProcessoAutomaticoStarted] = useState(false);
+  const [processoAutomaticoCompleto, setProcessoAutomaticoCompleto] = useState(false);
+  const [geShutdownDone, setGeShutdownDone] = useState(false);
 
   // GE e utenze
   const [geOn, setGeOn] = useState(false);
@@ -283,7 +297,7 @@ export default function App() {
     return Object.values(checklistItems).every(item => item === true);
   };
 
-  // MODIFIED: Updated canProceed logic for new step sequence
+  // MODIFIED: Updated canProceed logic for new simplified step sequence
   const canProceed = (): boolean => {
     switch (uiStep) {
       case 0: // Consolidated tank data
@@ -291,29 +305,21 @@ export default function App() {
                typeof volumeProdotto === "number" && volumeProdotto > 0 &&
                typeof temperatura === "number" && 
                typeof riempPerc === "number" && riempPerc > 0;
-      case 1: // Target pressure (moved from step 3)
+      case 1: // Target pressure with presets
         return typeof Pfinale === "number" && Pfinale > P0;
-      case 2: // Bottle verification (moved from step 4)  
-        return bomboleCheckDone && bomboleOK === true;
-      case 3: // Power systems (moved from step 5)
-        return batteriaOn && plcOn && monitorPressOn && monitorVallenOn && vallenReady;
-      case 4: // GE warmup (moved from step 6)
-        return geOn && geRpm === 3000 && warmup === 0;
-      case 5: // Utilities (moved from step 7)
-        return compressoreOn && essiccatoreOn && genN2On;
-      case 6: // Pressurization (moved from step 8)
+      case 2: // Bottle selection
+        return bombola1.used || bombola2.used || bombola3.used; // At least one bottle selected
+      case 3: // Initial verifications
+        return setupVallenLoaded && sensorsInstalled && sensorsWorking && backgroundNoiseMonitored;
+      case 4: // GE startup
+        return geStarted && geWarmupComplete && geOperational;
+      case 5: // Utilities
+        return allUtilitiesOn;
+      case 6: // Pressurization
         return pressurizzazioneProgress >= 100;
-      case 7: // Stasis (moved from step 9)
-        return timer === 0 && stasiCompletata;
-      case 8: // Depressurization (moved from step 10)
-        return depCompletata;
-      case 9: // Line discharge (moved from step 11)
-        return scaricoLineeDone;
-      case 10: // Generator discharge (moved from step 12)
-        return scaricoGenDone;
-      case 11: // Final checklist (moved from step 13)
-        return Object.values(checklistItems).every(item => item === true);
-      case 12: // Final completion (moved from step 14)
+      case 7: // Automatic process + shutdown
+        return processoAutomaticoCompleto && geShutdownDone;
+      case 8: // Final save/print/terminate
         return true;
       default: return false;
     }
