@@ -1,22 +1,39 @@
-// App.tsx - Dashboard Principale Torcia
+// App.tsx - Dashboard Principale Torcia - MODIFIED SEQUENCE
 import React, { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Menu, X, FileText } from "lucide-react";
 import SchemaImpianto from './SchemaImpianto';
-import { Fase, STEP_TITLES } from './types';
+import { Fase } from './types';
 import MenuBar from './MenuBar';
 import Settings, { SettingsLimits } from './Settings';
 import NumericInput from './NumericInput';
 
-// Wizard HMI sequenziale — simulazione con rampa pressione + controllo automatico bombole N₂
+// MODIFIED: New step titles with consolidated tank data in step 1
+const STEP_TITLES = [
+  "Dati serbatoio completi",                    // 0 - Consolidated: P0, capacity, temperature, fill%
+  "Selezionare pressione target",               // 1 - Moved from step 3
+  "Verifica automatica gas residuo bombole",   // 2 - Moved from step 4
+  "Attivare batteria/PLC/monitor/Vallen",      // 3 - Consolidated step 5+6
+  "GE warm-up e regime operativo",              // 4 - Consolidated step 6+7
+  "Attivare utenze (compressore/essiccatore/gen N₂)", // 5 - Moved from step 7
+  "Avvio pressurizzazione automatica",         // 6 - Moved from step 8
+  "Stasi stabilizzazione",                      // 7 - Moved from step 9
+  "Depressurizzazione in torcia",              // 8 - Moved from step 10
+  "Scarico automatico linee",                  // 9 - Moved from step 11
+  "Scarico linea generatore",                  // 10 - Moved from step 12
+  "Checklist finale",                          // 11 - Moved from step 13
+  "Processo completato",                       // 12 - Moved from step 14
+] as const;
+
+// Wizard HMI sequenziale – simulazione con rampa pressione + controllo automatico bombole N₂
 // Layout ristrutturato: Sidebar verticale + Area comandi centrale + Schema P&ID destra + Log popup
 
 export default function App() {
-  // Parametri serbatoio
+  // Parametri serbatoio - ALL CONSOLIDATED IN STEP 0
   const [P0, setP0] = useState(1.0);
-  const [Pfinale, setPfinale] = useState<number | "">("");
   const [volumeProdotto, setVolumeProdotto] = useState<number | "">("");
-  const [temperatura, setTemperatura] = useState<number | "">("");
+  const [temperatura, setTemperatura] = useState<number | "">("");  // Now "temperatura serbatoio"
   const [riempPerc, setRiempPerc] = useState<number | "">(""); // % di riempimento
+  const [Pfinale, setPfinale] = useState<number | "">("");
 
   // Alimentazioni/strumenti
   const [batteriaOn, setBatteriaOn] = useState(false);
@@ -266,23 +283,38 @@ export default function App() {
     return Object.values(checklistItems).every(item => item === true);
   };
 
+  // MODIFIED: Updated canProceed logic for new step sequence
   const canProceed = (): boolean => {
     switch (uiStep) {
-      case 0: return P0 > 0;
-      case 1: return typeof volumeProdotto === "number" && volumeProdotto > 0;
-      case 2: return typeof temperatura === "number" && typeof riempPerc === "number" && riempPerc > 0;
-      case 3: return typeof Pfinale === "number" && Pfinale > P0;
-      case 4: return bomboleCheckDone && bomboleOK === true;
-      case 5: return batteriaOn && plcOn && monitorPressOn && monitorVallenOn && vallenReady;
-      case 6: return geOn && geRpm === 3000 && warmup === 0;
-      case 7: return compressoreOn && essiccatoreOn && genN2On;
-      case 8: return pressurizzazioneProgress >= 100;
-      case 9: return timer === 0 && stasiCompletata;
-      case 10: return depCompletata;
-      case 11: return scaricoLineeDone;
-      case 12: return scaricoGenDone;
-      case 13: return allChecklistCompleted();
-      case 14: return true; // Pannello finale sempre disponibile
+      case 0: // Consolidated tank data
+        return P0 > 0 && 
+               typeof volumeProdotto === "number" && volumeProdotto > 0 &&
+               typeof temperatura === "number" && 
+               typeof riempPerc === "number" && riempPerc > 0;
+      case 1: // Target pressure (moved from step 3)
+        return typeof Pfinale === "number" && Pfinale > P0;
+      case 2: // Bottle verification (moved from step 4)  
+        return bomboleCheckDone && bomboleOK === true;
+      case 3: // Power systems (moved from step 5)
+        return batteriaOn && plcOn && monitorPressOn && monitorVallenOn && vallenReady;
+      case 4: // GE warmup (moved from step 6)
+        return geOn && geRpm === 3000 && warmup === 0;
+      case 5: // Utilities (moved from step 7)
+        return compressoreOn && essiccatoreOn && genN2On;
+      case 6: // Pressurization (moved from step 8)
+        return pressurizzazioneProgress >= 100;
+      case 7: // Stasis (moved from step 9)
+        return timer === 0 && stasiCompletata;
+      case 8: // Depressurization (moved from step 10)
+        return depCompletata;
+      case 9: // Line discharge (moved from step 11)
+        return scaricoLineeDone;
+      case 10: // Generator discharge (moved from step 12)
+        return scaricoGenDone;
+      case 11: // Final checklist (moved from step 13)
+        return Object.values(checklistItems).every(item => item === true);
+      case 12: // Final completion (moved from step 14)
+        return true;
       default: return false;
     }
   };
@@ -401,54 +433,53 @@ export default function App() {
     </>
   );
 
-  // Render step content
+  // MODIFIED: Render step content for new consolidated sequence
   const renderStep = () => {
     switch (uiStep) {
-      case 0:
-        return (
-          <div className="space-y-4">
-            <p className="text-slate-600">Inserire pressione iniziale P₀ [bar].</p>
-            <NumericInput
-              value={P0}
-              onChange={(v) => { setP0(v); setP_serb(v); }}
-              label="Pressione iniziale"
-              unit="bar"
-              min={settingsLimits.P0.min}
-              max={settingsLimits.P0.max}
-              decimals={1}
-              step={0.1}
-            />
-          </div>
-        );
-      case 1:
-        return (
-          <div className="space-y-4">
-            <p className="text-slate-600">Inserire capacità serbatoio [L].</p>
-            <NumericInput
-              value={volumeProdotto || 0}
-              onChange={setVolumeProdotto}
-              label="Capacità serbatoio"
-              unit="L"
-              min={settingsLimits.volumeProdotto.min}
-              max={settingsLimits.volumeProdotto.max}
-              decimals={0}
-              step={1}
-            />
-          </div>
-        );
-      case 2:
+      case 0: // CONSOLIDATED TANK DATA PANEL
         return (
           <div className="space-y-6">
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
-              <h4 className="font-semibold text-blue-800 mb-4">Parametri Ambientali e Serbatoio</h4>
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-200">
+              <h4 className="font-semibold text-blue-800 mb-6 text-lg">📊 Dati Serbatoio Completi</h4>
               
-              <div className="space-y-4">
+              <div className="space-y-6">
+                {/* Pressione iniziale */}
                 <div>
-                  <p className="text-blue-700 text-sm mb-2">Temperatura ambiente [°C]</p>
+                  <p className="text-blue-700 text-sm mb-3 font-medium">Pressione iniziale P₀ [bar]</p>
+                  <NumericInput
+                    value={P0}
+                    onChange={(v) => { setP0(v); setP_serb(v); }}
+                    label="Pressione iniziale"
+                    unit="bar"
+                    min={settingsLimits.P0.min}
+                    max={settingsLimits.P0.max}
+                    decimals={1}
+                    step={0.1}
+                  />
+                </div>
+
+                {/* Capacità serbatoio */}
+                <div>
+                  <p className="text-blue-700 text-sm mb-3 font-medium">Capacità serbatoio [L]</p>
+                  <NumericInput
+                    value={volumeProdotto || 0}
+                    onChange={setVolumeProdotto}
+                    label="Capacità serbatoio"
+                    unit="L"
+                    min={settingsLimits.volumeProdotto.min}
+                    max={settingsLimits.volumeProdotto.max}
+                    decimals={0}
+                    step={1}
+                  />
+                </div>
+                
+                {/* Temperatura serbatoio */}
+                <div>
+                  <p className="text-blue-700 text-sm mb-3 font-medium">Temperatura serbatoio [°C]</p>
                   <NumericInput
                     value={temperatura || 0}
                     onChange={setTemperatura}
-                    label="Temperatura ambiente"
+                    label="Temperatura serbatoio"
                     unit="°C"
                     min={settingsLimits.temperatura.min}
                     max={settingsLimits.temperatura.max}
@@ -457,8 +488,9 @@ export default function App() {
                   />
                 </div>
                 
+                {/* Percentuale riempimento */}
                 <div>
-                  <p className="text-blue-700 text-sm mb-2">Percentuale riempimento serbatoio [%]</p>
+                  <p className="text-blue-700 text-sm mb-3 font-medium">Percentuale riempimento serbatoio [%]</p>
                   <NumericInput
                     value={riempPerc || 0}
                     onChange={setRiempPerc}
@@ -471,10 +503,17 @@ export default function App() {
                   />
                 </div>
               </div>
+
+              <div className="mt-6 p-4 bg-blue-100 rounded-lg border border-blue-300">
+                <p className="text-blue-800 text-sm font-medium">
+                  📋 Inserire tutti i parametri del serbatoio prima di procedere
+                </p>
+              </div>
             </div>
           </div>
         );
-      case 3:
+
+      case 1: // Target pressure (moved from old step 3)
         return (
           <div className="space-y-4">
             <p className="text-slate-600">Inserire pressione finale desiderata [bar].</p>
@@ -490,7 +529,8 @@ export default function App() {
             />
           </div>
         );
-      case 4:
+
+      case 2: // Bottle verification (moved from old step 4)
         return (
           <div className="space-y-4">
             <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-4 rounded-lg border border-amber-200">
@@ -533,11 +573,12 @@ export default function App() {
             </div>
           </div>
         );
-      case 5:
+
+      case 3: // Power systems + Vallen (consolidated old steps 5+6)
         return (
           <div className="space-y-4">
             <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-4 rounded-lg border border-purple-200">
-              <h4 className="font-semibold text-purple-800 mb-4">Alimentazioni e Strumenti</h4>
+              <h4 className="font-semibold text-purple-800 mb-4">Alimentazioni, Strumenti e Vallen</h4>
               
               <div className="space-y-3">
                 <label className="flex items-center gap-3 cursor-pointer p-2 hover:bg-white/50 rounded-lg transition-colors">
@@ -567,17 +608,18 @@ export default function App() {
                 
                 <label className="flex items-center gap-3 cursor-pointer p-2 hover:bg-white/50 rounded-lg transition-colors">
                   <input type="checkbox" checked={vallenReady} onChange={(e) => setVallenReady(e.target.checked)} className="w-4 h-4" />
-                  <span>✅ Vallen pronto</span>
+                  <span>✅ Vallen pronto (modello + calibrazione)</span>
                 </label>
               </div>
             </div>
           </div>
         );
-      case 6:
+
+      case 4: // GE warmup + operational (consolidated old steps 6+7)
         return (
           <div className="space-y-4">
             <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
-              <h4 className="font-semibold text-green-800 mb-4">Gruppo Elettrogeno</h4>
+              <h4 className="font-semibold text-green-800 mb-4">Gruppo Elettrogeno - Warm-up e Regime</h4>
               
               <div className="space-y-4">
                 <label className="flex items-center gap-3 cursor-pointer">
@@ -651,7 +693,8 @@ export default function App() {
             </div>
           </div>
         );
-      case 7:
+
+      case 5: // Utilities (moved from old step 7)
         return (
           <div className="space-y-4">
             <p className="text-slate-600">Accensione utenze a valle GE.</p>
@@ -671,7 +714,8 @@ export default function App() {
             </div>
           </div>
         );
-      case 8:
+
+      case 6: // Pressurization (moved from old step 8)
         return (
           <div className="space-y-4">
             <div className="bg-gradient-to-br from-indigo-50 to-blue-50 p-4 rounded-lg border border-indigo-200">
@@ -732,7 +776,8 @@ export default function App() {
             </div>
           </div>
         );
-      case 9:
+
+      case 7: // Stasis (moved from old step 9)
         return (
           <div className="space-y-4">
             <p className="text-slate-600">Fase di stasi (12s simulazione) per stabilizzazione pressione.</p>
@@ -765,7 +810,8 @@ export default function App() {
             {stasiCompletata && <div className="text-center text-emerald-700 text-sm font-medium">✓ Stasi completata.</div>}
           </div>
         );
-      case 10:
+
+      case 8: // Depressurization (moved from old step 10)
         return (
           <div className="space-y-4">
             <p className="text-slate-600">Depressurizzazione automatica verso torcia.</p>
@@ -787,7 +833,8 @@ export default function App() {
             )}
           </div>
         );
-      case 11:
+
+      case 9: // Line discharge (moved from old step 11)
         return (
           <div className="space-y-4">
             <p className="text-slate-600">Scarico automatico linee (PV1/PV4/PV6 aprono e poi richiudono).</p>
@@ -800,7 +847,8 @@ export default function App() {
             {scaricoLineeDone && <div className="text-center text-emerald-700 text-sm font-medium">✓ Scarico linee completato.</div>}
           </div>
         );
-      case 12:
+
+      case 10: // Generator discharge (moved from old step 12)
         return (
           <div className="space-y-4">
             <p className="text-slate-600">Scarico linea generatore.</p>
@@ -813,7 +861,8 @@ export default function App() {
             {scaricoGenDone && <div className="text-center text-emerald-700 text-sm font-medium">✓ Scarico generatore completato.</div>}
           </div>
         );
-      case 13:
+
+      case 11: // Final checklist (moved from old step 13)
         return (
           <div className="space-y-6">
             <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-6 rounded-xl border shadow-inner">
@@ -889,7 +938,8 @@ export default function App() {
             </div>
           </div>
         );
-      case 14:
+
+      case 12: // Final completion (moved from old step 14)
         return (
           <div className="space-y-6">
             {!salvataggioRichiesto ? (
@@ -922,7 +972,7 @@ export default function App() {
                       pushLog("Processo completato senza salvataggio.");
                     }}
                   >
-                    ⏭️ Termina senza salvare
+                    ⭐ Termina senza salvare
                   </button>
                 </div>
               </div>
@@ -935,6 +985,7 @@ export default function App() {
             )}
           </div>
         );
+
       default:
         return null;
     }
