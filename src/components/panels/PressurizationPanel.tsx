@@ -1,6 +1,6 @@
 // PressurizationPanel.tsx - Step 6: Pressurization Component
 import React from 'react';
-import { Fase } from '../types';
+import { Fase } from '../../types/process';
 
 interface PressurizationPanelProps {
   pressurizzazioneProgress: number;

@@ -1,7 +1,7 @@
 // TankDataPanel.tsx - Step 0: Tank Data Input Component
 import React from 'react';
-import NumericInput from '../NumericInput';
-import { SettingsLimits } from '../Settings';
+import NumericInput from '../../NumericInput';
+import { SettingsLimits } from '../../Settings';
 
 interface TankDataPanelProps {
   P0: number;

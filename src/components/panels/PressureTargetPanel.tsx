@@ -1,7 +1,7 @@
 // PressureTargetPanel.tsx - Step 1: Pressure Target Selection Component
 import React from 'react';
-import NumericInput from '../NumericInput';
-import { SettingsLimits } from '../Settings';
+import NumericInput from '../../NumericInput';
+import { SettingsLimits } from '../../Settings';
 
 interface PressureTargetPanelProps {
   Pfinale: number | "";

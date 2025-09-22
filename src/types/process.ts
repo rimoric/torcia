@@ -12,6 +12,19 @@ export type Fase =
   | "ScaricoGeneratore" 
   | "Checklist";
 
+// Constants - Step titles for the wizard
+export const STEP_TITLES = [
+  "Dati serbatoio completi",
+  "Selezionare pressione target", 
+  "Scelta bombole",
+  "Verifiche iniziali",
+  "Gruppo Elettrogeno",
+  "Attivare utenze",
+  "Avvio pressurizzazione automatica",
+  "Processo automatico e spegnimento",
+  "Salvataggio e conclusione",
+] as const;
+
 // Bottle configuration interface
 export interface BottleConfig {
   used: boolean;

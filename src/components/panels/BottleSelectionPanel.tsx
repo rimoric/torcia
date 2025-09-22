@@ -1,6 +1,6 @@
 // BottleSelectionPanel.tsx - Step 2: Bottle Selection Component
 import React from 'react';
-import NumericInput from '../NumericInput';
+import NumericInput from '../../NumericInput';
 
 interface BottleConfig {
   used: boolean;

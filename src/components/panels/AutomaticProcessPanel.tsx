@@ -1,6 +1,6 @@
 // AutomaticProcessPanel.tsx - Step 7: Automatic Process and Shutdown Component
 import React from 'react';
-import { Fase } from '../types';
+import { Fase } from '../../types/process';
 
 interface ChecklistItems {
   pressioni: boolean;
