@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 // Configurazione pacco bombole azoto (facilmente modificabile)
 const NITROGEN_BOTTLES_CONFIG = {
@@ -82,7 +82,7 @@ interface NitrogenBottlePackProps {
   
   // Configurazione
   label?: string;
-  orientation?: 'vertical' | 'horizontal';
+  orientation?: 'vertical' | 'horizontal' | 'vertical-inverted';
   
   // Styling opzionale
   size?: number;
@@ -97,27 +97,6 @@ const NitrogenBottlePack: React.FC<NitrogenBottlePackProps> = ({
   size = 1,
   className = ""
 }) => {
-  const [displayBottles, setDisplayBottles] = useState(bottles);
-  const [displayManifoldPressure, setDisplayManifoldPressure] = useState(manifoldPressure);
-
-  // Animazione graduale dei valori
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setDisplayBottles(prev => prev.map((bottle, index) => ({
-        ...bottle,
-        pressure: bottle.pressure + (bottles[index].pressure - bottle.pressure) * 0.1
-      })));
-      
-      setDisplayManifoldPressure(prev => {
-        const diff = manifoldPressure - prev;
-        if (Math.abs(diff) < 0.5) return manifoldPressure;
-        return prev + (diff > 0 ? Math.min(2, diff) : Math.max(-2, diff));
-      });
-    }, 100);
-
-    return () => clearInterval(interval);
-  }, [bottles, manifoldPressure]);
-
   // Dimensioni scalate
   const bottleWidth = NITROGEN_BOTTLES_CONFIG.bottleWidth * size;
   const bottleHeight = NITROGEN_BOTTLES_CONFIG.bottleHeight * size;
@@ -133,7 +112,8 @@ const NitrogenBottlePack: React.FC<NitrogenBottlePackProps> = ({
   };
   
   // Calcolo dimensioni SVG basate sull'orientamento
-  const isVertical = orientation === 'vertical';
+  const isVertical = orientation === 'vertical' || orientation === 'vertical-inverted';
+  const isInverted = orientation === 'vertical-inverted';
   const svgWidth = isVertical ? manifoldWidth + 60 : bottleHeight + manifoldWidth + 120;
   const svgHeight = isVertical ? bottleHeight + manifoldHeight + 120 : manifoldHeight + bottleWidth + 120;
   
@@ -142,7 +122,8 @@ const NitrogenBottlePack: React.FC<NitrogenBottlePackProps> = ({
   
   // Posizioni componenti basate sull'orientamento
   const getPositions = () => {
-    if (isVertical) {
+    if (orientation === 'vertical') {
+      // Orientamento verticale normale (collettore in alto)
       return {
         bottles: Array.from({ length: bottles.length }, (_, i) => ({
           x: centerX - manifoldWidth/2 + (i + 1) * manifoldWidth/(bottles.length + 1) - bottleWidth/2,
@@ -161,8 +142,28 @@ const NitrogenBottlePack: React.FC<NitrogenBottlePackProps> = ({
           y: centerY - bottleHeight/2 - manifoldHeight/2 + 40
         }
       };
+    } else if (orientation === 'vertical-inverted') {
+      // Orientamento verticale invertito (collettore in basso a stretto contatto)
+      return {
+        bottles: Array.from({ length: bottles.length }, (_, i) => ({
+          x: centerX - manifoldWidth/2 + (i + 1) * manifoldWidth/(bottles.length + 1) - bottleWidth/2,
+          y: centerY - bottleHeight/2 + 40,
+          width: bottleWidth,
+          height: bottleHeight
+        })),
+        manifold: {
+          x: centerX - manifoldWidth/2,
+          y: centerY + bottleHeight/2 + 30, // A stretto contatto con le bombole
+          width: manifoldWidth,
+          height: manifoldHeight
+        },
+        gauge: {
+          x: centerX,
+          y: centerY + bottleHeight/2 + 30 + manifoldHeight/2
+        }
+      };
     } else {
-      // Orizzontale: collettore verticale a sinistra, bombole una sopra l'altra
+      // Orizzontale: collettore rettangolare a stretto contatto a sinistra
       const totalHeight = bottles.length * bottleWidth + (bottles.length - 1) * 20;
       return {
         bottles: Array.from({ length: bottles.length }, (_, i) => ({
@@ -172,13 +173,13 @@ const NitrogenBottlePack: React.FC<NitrogenBottlePackProps> = ({
           height: bottleWidth
         })),
         manifold: {
-          x: centerX - bottleHeight/2 - manifoldHeight + 10,
-          y: centerY - totalHeight/2 - 10,
-          width: manifoldHeight, // collettore verticale
-          height: totalHeight + 20
+          x: centerX - bottleHeight/2 + 20, // A stretto contatto con le bombole
+          y: centerY - totalHeight/2,
+          width: manifoldHeight, // collettore verticale rettangolare
+          height: totalHeight
         },
         gauge: {
-          x: centerX - bottleHeight/2 - manifoldHeight/2 + 10,
+          x: centerX - bottleHeight/2 + 20 + manifoldHeight/2,
           y: centerY
         }
       };
@@ -188,14 +189,15 @@ const NitrogenBottlePack: React.FC<NitrogenBottlePackProps> = ({
   const positions = getPositions();
 
   // Componente Bombola (aggiornato per orientamento e dettagli individuali)
-  const Bottle = ({ x, y, width, height, index, bottleData, horizontal = false }: { 
+  const Bottle = ({ x, y, width, height, index, bottleData, horizontal = false, inverted = false }: { 
     x: number; 
     y: number; 
     width: number; 
     height: number; 
     index: number; 
     bottleData: BottleData;
-    horizontal?: boolean 
+    horizontal?: boolean;
+    inverted?: boolean;
   }) => {
     const pressureRange = getPressureRange(bottleData.pressure);
     const pressureColors = pressureRange.colors;
@@ -214,11 +216,11 @@ const NitrogenBottlePack: React.FC<NitrogenBottlePackProps> = ({
           rx={horizontal ? height/6 : width/6}
         />
         
-        {/* Ogiva (solo per verticale, omessa per orizzontale) */}
+        {/* Ogiva (posizionata correttamente in base all'orientamento) */}
         {!horizontal && (
           <ellipse
             cx={x + width/2}
-            cy={y}
+            cy={inverted ? y + height * 0.9 : y} // In basso se invertita, in alto se normale
             rx={width/2}
             ry={width/4}
             fill={bottleData.enabled ? NITROGEN_BOTTLES_CONFIG.colors.bottle : NITROGEN_BOTTLES_CONFIG.colors.disabled}
@@ -256,7 +258,9 @@ const NitrogenBottlePack: React.FC<NitrogenBottlePackProps> = ({
         {bottleData.enabled && (
           <rect
             x={x + 2}
-            y={horizontal ? y + 2 : y + height * 0.9 - (height * 0.85) * fillLevel/100}
+            y={horizontal ? y + 2 : 
+               inverted ? y + 2 : // Se invertita, il riempimento inizia dall'alto
+               y + height * 0.9 - (height * 0.85) * fillLevel/100} // Se normale, dal basso
             width={horizontal ? (width - 4) * fillLevel/100 : width - 4}
             height={horizontal ? height - 4 : (height * 0.85) * fillLevel/100}
             fill={pressureColors.primary}
@@ -265,10 +269,11 @@ const NitrogenBottlePack: React.FC<NitrogenBottlePackProps> = ({
           />
         )}
         
-        {/* Valvola (in cima per verticale, sinistra per orizzontale) */}
+        {/* Valvola (posizionata correttamente in base all'orientamento) */}
         <rect
           x={horizontal ? x - 8 : x + width/2 - 3}
-          y={horizontal ? y + height/2 - 3 : y - 8}
+          y={horizontal ? y + height/2 - 3 : 
+             inverted ? y + height * 0.9 : y - 8} // In basso se invertita, in alto se normale/orizzontale
           width={horizontal ? 8 : 6}
           height={horizontal ? 6 : 8}
           fill={bottleData.enabled ? NITROGEN_BOTTLES_CONFIG.colors.valve : NITROGEN_BOTTLES_CONFIG.colors.disabled}
@@ -328,10 +333,10 @@ const NitrogenBottlePack: React.FC<NitrogenBottlePackProps> = ({
           </>
         )}
         
-        {/* Numero bombola */}
+        {/* Numero bombola (sempre leggibile, non capovolto) */}
         <text
           x={x + width/2}
-          y={y + height - 5}
+          y={inverted ? y + 15 : y + height - 5} // Posizionato correttamente per la leggibilità
           textAnchor="middle"
           fontSize={NITROGEN_BOTTLES_CONFIG.fontSize.bottleInfo}
           fill={NITROGEN_BOTTLES_CONFIG.colors.text}
@@ -343,7 +348,7 @@ const NitrogenBottlePack: React.FC<NitrogenBottlePackProps> = ({
     );
   };
 
-  const manifoldPressureRange = getPressureRange(displayManifoldPressure);
+  const manifoldPressureRange = getPressureRange(manifoldPressure);
   const manifoldPressureColors = manifoldPressureRange.colors;
 
   return (
@@ -400,19 +405,21 @@ const NitrogenBottlePack: React.FC<NitrogenBottlePackProps> = ({
             width={bottle.width}
             height={bottle.height}
             index={index}
-            bottleData={displayBottles[index]}
-            horizontal={!isVertical}
+            bottleData={bottles[index]}
+            horizontal={orientation === 'horizontal'}
+            inverted={isInverted}
           />
         ))}
 
         {/* Connessioni dalle bombole al collettore */}
         {positions.bottles.map((bottle, index) => {
           const connectionStart = isVertical 
-            ? { x: bottle.x + bottle.width/2, y: bottle.y }
+            ? { x: bottle.x + bottle.width/2, y: isInverted ? bottle.y + bottle.height : bottle.y }
             : { x: bottle.x, y: bottle.y + bottle.height/2 };
           const connectionEnd = isVertical
-            ? { x: positions.manifold.x + (index + 1) * positions.manifold.width/(bottles.length + 1), y: positions.manifold.y + positions.manifold.height }
-            : { x: positions.manifold.x + positions.manifold.width, y: positions.manifold.y + 10 + (index + 1) * (positions.manifold.height - 20)/(bottles.length + 1) };
+            ? { x: positions.manifold.x + (index + 1) * positions.manifold.width/(bottles.length + 1), 
+                y: isInverted ? positions.manifold.y : positions.manifold.y + positions.manifold.height }
+            : { x: positions.manifold.x, y: positions.manifold.y + (index + 0.5) * (positions.manifold.height)/(bottles.length) }; // Connessione al centro di ogni sezione
           
           return (
             <line
@@ -421,9 +428,9 @@ const NitrogenBottlePack: React.FC<NitrogenBottlePackProps> = ({
               y1={connectionStart.y}
               x2={connectionEnd.x}
               y2={connectionEnd.y}
-              stroke={displayBottles[index].enabled ? NITROGEN_BOTTLES_CONFIG.colors.manifold : NITROGEN_BOTTLES_CONFIG.colors.disabled}
+              stroke={bottles[index].enabled ? NITROGEN_BOTTLES_CONFIG.colors.manifold : NITROGEN_BOTTLES_CONFIG.colors.disabled}
               strokeWidth={3}
-              opacity={displayBottles[index].enabled ? 1 : 0.5}
+              opacity={bottles[index].enabled ? 1 : 0.5}
             />
           );
         })}
@@ -436,7 +443,7 @@ const NitrogenBottlePack: React.FC<NitrogenBottlePackProps> = ({
           height={positions.manifold.height}
           fill={NITROGEN_BOTTLES_CONFIG.colors.bottleShadow}
           opacity={0.4}
-          rx={positions.manifold.height/2}
+          rx={orientation === 'horizontal' ? 4 : positions.manifold.height/2} // Rettangolare per orizzontale, cilindrico per verticale
         />
 
         {/* Collettore principale */}
@@ -448,7 +455,7 @@ const NitrogenBottlePack: React.FC<NitrogenBottlePackProps> = ({
           fill={`url(#manifold-gradient-${label})`}
           stroke={NITROGEN_BOTTLES_CONFIG.colors.border}
           strokeWidth={NITROGEN_BOTTLES_CONFIG.strokeWidth}
-          rx={positions.manifold.height/2}
+          rx={orientation === 'horizontal' ? 4 : positions.manifold.height/2} // Rettangolare per orizzontale, cilindrico per verticale
           filter={`url(#shadow-bottles-${label})`}
         />
 
@@ -503,7 +510,7 @@ const NitrogenBottlePack: React.FC<NitrogenBottlePackProps> = ({
               fontWeight="bold"
               fill="white"
             >
-              {Math.round(displayManifoldPressure)} bar
+              {Math.round(manifoldPressure)} bar
             </text>
           </g>
         )}
@@ -513,26 +520,30 @@ const NitrogenBottlePack: React.FC<NitrogenBottlePackProps> = ({
           <g>
             {/* Ombra dell'etichetta */}
             <text
-              x={centerX + 1}
-              y={svgHeight - 14}
+              x={orientation === 'horizontal' ? centerX + 1 : centerX + 1}
+              y={orientation === 'vertical-inverted' ? svgHeight - 5 : 
+                 orientation === 'horizontal' ? 20 : 
+                 svgHeight - 14}
               textAnchor="middle"
               fontSize={NITROGEN_BOTTLES_CONFIG.fontSize.label}
               fontWeight="bold"
               fill="black"
               opacity={0.3}
             >
-              {label} - N₂ PACK
+              {label} - N₂ PACK {isInverted ? "(INVERTED)" : ""}
             </text>
             {/* Etichetta principale */}
             <text
-              x={centerX}
-              y={svgHeight - 15}
+              x={orientation === 'horizontal' ? centerX : centerX}
+              y={orientation === 'vertical-inverted' ? svgHeight - 6 : 
+                 orientation === 'horizontal' ? 19 : 
+                 svgHeight - 15}
               textAnchor="middle"
               fontSize={NITROGEN_BOTTLES_CONFIG.fontSize.label}
               fontWeight="bold"
               fill={NITROGEN_BOTTLES_CONFIG.colors.text}
             >
-              {label} - N₂ PACK
+              {label} - N₂ PACK {isInverted ? "(INVERTED)" : ""}
             </text>
           </g>
         )}
@@ -541,316 +552,149 @@ const NitrogenBottlePack: React.FC<NitrogenBottlePackProps> = ({
   );
 };
 
-// Componente Demo per mostrare entrambi gli orientamenti
-const NitrogenBottlePackDemo: React.FC = () => {
-  const [pack1Bottles, setPack1Bottles] = useState<BottleData[]>([
+// Componente demo per mostrare tutti gli orientamenti
+const NitrogenBottlePackDemo = () => {
+  // Dati di esempio per le bombole
+  const sampleBottles = [
     { pressure: 180, capacity: 50, enabled: true },
-    { pressure: 175, capacity: 50, enabled: true },
-    { pressure: 170, capacity: 50, enabled: true }
-  ]);
-  
-  const [pack2Bottles, setPack2Bottles] = useState<BottleData[]>([
-    { pressure: 120, capacity: 40, enabled: true },
-    { pressure: 110, capacity: 40, enabled: true },
-    { pressure: 0, capacity: 40, enabled: false }
-  ]);
-  
-  const [pack3Bottles, setPack3Bottles] = useState<BottleData[]>([
-    { pressure: 75, capacity: 60, enabled: true },
-    { pressure: 80, capacity: 60, enabled: true },
-    { pressure: 70, capacity: 60, enabled: true }
-  ]);
-  
-  const [pack4Bottles, setPack4Bottles] = useState<BottleData[]>([
-    { pressure: 190, capacity: 50, enabled: true },
-    { pressure: 0, capacity: 50, enabled: false },
-    { pressure: 195, capacity: 50, enabled: true }
-  ]);
+    { pressure: 120, capacity: 50, enabled: true },
+    { pressure: 85, capacity: 50, enabled: true }
+  ];
 
-  // Calcola pressione del collettore come media delle bombole abilitate
-  const calculateManifoldPressure = (bottles: BottleData[]) => {
-    const enabledBottles = bottles.filter(b => b.enabled);
-    if (enabledBottles.length === 0) return 0;
-    return enabledBottles.reduce((sum, b) => sum + b.pressure, 0) / enabledBottles.length;
-  };
-
-  // Simulazione automatica
-  const [autoMode, setAutoMode] = useState(false);
-
-  useEffect(() => {
-    if (autoMode) {
-      const interval = setInterval(() => {
-        // Simulazione consumo azoto graduale per bombole abilitate
-        setPack1Bottles(prev => prev.map(b => 
-          b.enabled ? { ...b, pressure: Math.max(0, b.pressure - Math.random() * 2) } : b
-        ));
-        
-        setPack2Bottles(prev => prev.map(b => 
-          b.enabled ? { ...b, pressure: Math.max(0, b.pressure - Math.random() * 1.5) } : b
-        ));
-        
-        setPack3Bottles(prev => prev.map(b => 
-          b.enabled ? { ...b, pressure: Math.max(0, b.pressure - Math.random() * 1) } : b
-        ));
-        
-        setPack4Bottles(prev => prev.map(b => 
-          b.enabled ? { ...b, pressure: Math.max(0, b.pressure - Math.random() * 2.5) } : b
-        ));
-      }, 3000);
-      return () => clearInterval(interval);
-    }
-  }, [autoMode]);
-
-  const getPressureStatus = (pressure: number) => {
-    if (pressure >= 150) return { status: 'ALTO', color: 'text-green-600' };
-    if (pressure >= 100) return { status: 'MEDIO', color: 'text-yellow-600' };
-    return { status: 'BASSO', color: 'text-red-600' };
-  };
-
-  // Toggle abilitazione bombola
-  const toggleBottle = (packSetter: React.Dispatch<React.SetStateAction<BottleData[]>>, index: number) => {
-    packSetter(prev => prev.map((b, i) => 
-      i === index ? { ...b, enabled: !b.enabled, pressure: b.enabled ? 0 : 150 } : b
-    ));
-  };
+  const [selectedOrientation, setSelectedOrientation] = useState<'vertical' | 'horizontal' | 'vertical-inverted'>('vertical');
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">
-          Pacco Bombole Azoto - Dettagli Individuali
-        </h1>
-        
-        {/* Pannello controlli */}
-        <div className="bg-white rounded-lg shadow-md p-4 mb-6">
-          <h2 className="text-lg font-semibold mb-4">Controlli Demo</h2>
-          <div className="flex items-center gap-6">
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={autoMode}
-                onChange={(e) => setAutoMode(e.target.checked)}
-                className="rounded"
-              />
-              <span className="text-sm font-medium">Simulazione Automatica</span>
-            </label>
-            {autoMode && (
-              <span className="text-xs text-green-600 font-medium">
-                ● Simulazione attiva - consumo graduale azoto
-              </span>
-            )}
-          </div>
-          <p className="text-xs text-gray-600 mt-2">
-            Clicca sulle bombole nel pannello di controllo per abilitare/disabilitare
+      <div className="max-w-6xl mx-auto">
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">NitrogenBottlePack - Versione Corretta</h1>
+          <p className="text-gray-600 mb-4">
+            Componente con collettori a stretto contatto e forme ottimizzate
           </p>
-        </div>
-
-        {/* Griglia pacchi bombole */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           
-          {/* Pacco Verticale 1 */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-semibold mb-4 text-center text-gray-700">
-              Pacco Verticale - Alta Pressione
-            </h3>
-            <div className="flex justify-center">
-              <NitrogenBottlePack
-                bottles={pack1Bottles}
-                manifoldPressure={calculateManifoldPressure(pack1Bottles)}
-                label="N2-001"
-                orientation="vertical"
-                size={0.8}
-              />
-            </div>
-            <div className="mt-4 space-y-2">
-              {pack1Bottles.map((bottle, index) => (
-                <div key={index} className="flex items-center justify-between text-xs p-2 bg-gray-50 rounded">
-                  <button
-                    onClick={() => toggleBottle(setPack1Bottles, index)}
-                    className={`px-2 py-1 rounded ${bottle.enabled ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-600'}`}
-                  >
-                    Bombola #{index + 1}
-                  </button>
-                  <span>{bottle.capacity}L</span>
-                  <span className={`font-semibold ${getPressureStatus(bottle.pressure).color}`}>
-                    {Math.round(bottle.pressure)} bar
-                  </span>
-                </div>
+          {/* Selettore orientamento */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Seleziona Orientamento:</label>
+            <div className="flex gap-3">
+              {(['vertical', 'horizontal', 'vertical-inverted'] as const).map((orientation) => (
+                <button
+                  key={orientation}
+                  onClick={() => setSelectedOrientation(orientation)}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                    selectedOrientation === orientation
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  {orientation}
+                </button>
               ))}
             </div>
           </div>
-
-          {/* Pacco Verticale 2 */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-semibold mb-4 text-center text-gray-700">
-              Pacco Verticale - Media Pressione
+          
+          {/* Anteprima singola */}
+          <div className="text-center">
+            <h3 className="text-lg font-semibold mb-4 text-gray-700">
+              Anteprima: {selectedOrientation}
             </h3>
-            <div className="flex justify-center">
+            <div className="flex justify-center bg-gray-100 rounded-lg p-6">
               <NitrogenBottlePack
-                bottles={pack2Bottles}
-                manifoldPressure={calculateManifoldPressure(pack2Bottles)}
-                label="N2-002"
-                orientation="vertical"
-                size={0.8}
+                bottles={sampleBottles}
+                manifoldPressure={125}
+                label="N2-DEMO"
+                orientation={selectedOrientation}
+                size={0.7}
               />
-            </div>
-            <div className="mt-4 space-y-2">
-              {pack2Bottles.map((bottle, index) => (
-                <div key={index} className="flex items-center justify-between text-xs p-2 bg-gray-50 rounded">
-                  <button
-                    onClick={() => toggleBottle(setPack2Bottles, index)}
-                    className={`px-2 py-1 rounded ${bottle.enabled ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-600'}`}
-                  >
-                    Bombola #{index + 1}
-                  </button>
-                  <span>{bottle.capacity}L</span>
-                  <span className={`font-semibold ${getPressureStatus(bottle.pressure).color}`}>
-                    {Math.round(bottle.pressure)} bar
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Pacco Orizzontale 1 */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-semibold mb-4 text-center text-gray-700">
-              Pacco Orizzontale - Bassa Pressione
-            </h3>
-            <div className="flex justify-center">
-              <NitrogenBottlePack
-                bottles={pack3Bottles}
-                manifoldPressure={calculateManifoldPressure(pack3Bottles)}
-                label="N2-003"
-                orientation="horizontal"
-                size={0.8}
-              />
-            </div>
-            <div className="mt-4 space-y-2">
-              {pack3Bottles.map((bottle, index) => (
-                <div key={index} className="flex items-center justify-between text-xs p-2 bg-gray-50 rounded">
-                  <button
-                    onClick={() => toggleBottle(setPack3Bottles, index)}
-                    className={`px-2 py-1 rounded ${bottle.enabled ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-600'}`}
-                  >
-                    Bombola #{index + 1}
-                  </button>
-                  <span>{bottle.capacity}L</span>
-                  <span className={`font-semibold ${getPressureStatus(bottle.pressure).color}`}>
-                    {Math.round(bottle.pressure)} bar
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Pacco Orizzontale 2 */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-semibold mb-4 text-center text-gray-700">
-              Pacco Orizzontale - Alta Pressione
-            </h3>
-            <div className="flex justify-center">
-              <NitrogenBottlePack
-                bottles={pack4Bottles}
-                manifoldPressure={calculateManifoldPressure(pack4Bottles)}
-                label="N2-004"
-                orientation="horizontal"
-                size={0.8}
-              />
-            </div>
-            <div className="mt-4 space-y-2">
-              {pack4Bottles.map((bottle, index) => (
-                <div key={index} className="flex items-center justify-between text-xs p-2 bg-gray-50 rounded">
-                  <button
-                    onClick={() => toggleBottle(setPack4Bottles, index)}
-                    className={`px-2 py-1 rounded ${bottle.enabled ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-600'}`}
-                  >
-                    Bombola #{index + 1}
-                  </button>
-                  <span>{bottle.capacity}L</span>
-                  <span className={`font-semibold ${getPressureStatus(bottle.pressure).color}`}>
-                    {Math.round(bottle.pressure)} bar
-                  </span>
-                </div>
-              ))}
             </div>
           </div>
         </div>
 
-        {/* Pannello di stato sistema */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h2 className="text-lg font-semibold mb-4">Sistema Azoto - Monitoraggio Dettagliato</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { label: 'N2-001', bottles: pack1Bottles, orientation: 'Verticale' },
-              { label: 'N2-002', bottles: pack2Bottles, orientation: 'Verticale' },
-              { label: 'N2-003', bottles: pack3Bottles, orientation: 'Orizzontale' },
-              { label: 'N2-004', bottles: pack4Bottles, orientation: 'Orizzontale' }
-            ].map((pack, index) => {
-              const avgPressure = calculateManifoldPressure(pack.bottles);
-              const status = getPressureStatus(avgPressure);
-              const enabledCount = pack.bottles.filter(b => b.enabled).length;
-              const totalCapacity = pack.bottles.reduce((sum, b) => sum + (b.enabled ? b.capacity : 0), 0);
-              
-              return (
-                <div key={index} className={`p-4 rounded-lg border-2 ${
-                  avgPressure >= 150 ? 'border-green-500 bg-green-50' :
-                  avgPressure >= 100 ? 'border-yellow-500 bg-yellow-50' :
-                  'border-red-500 bg-red-50'
-                }`}>
-                  <div className="text-sm font-semibold text-gray-700">{pack.label}</div>
-                  <div className="text-xs text-gray-600">{pack.orientation}</div>
-                  <div className="text-sm font-bold text-gray-800">
-                    {Math.round(avgPressure)} bar (media)
-                  </div>
-                  <div className="text-xs text-gray-600">
-                    {enabledCount}/{pack.bottles.length} bombole attive
-                  </div>
-                  <div className="text-xs text-blue-600">
-                    {totalCapacity}L capacità totale
-                  </div>
-                  <div className={`text-xs font-semibold ${status.color}`}>
-                    {status.status}
-                  </div>
-                </div>
-              );
-            })}
+        {/* Confronto tutti gli orientamenti */}
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">Confronto Orientamenti Corretti</h2>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Verticale normale */}
+            <div className="text-center">
+              <h3 className="text-lg font-semibold mb-4 text-gray-700">Vertical (Normale)</h3>
+              <div className="bg-gray-100 rounded-lg p-4 flex justify-center">
+                <NitrogenBottlePack
+                  bottles={sampleBottles}
+                  manifoldPressure={125}
+                  label="N2-001"
+                  orientation="vertical"
+                  size={0.5}
+                />
+              </div>
+              <div className="mt-4 text-sm text-gray-600">
+                <p>• Collettore in alto (cilindrico)</p>
+                <p>• A stretto contatto con bombole</p>
+                <p>• Valvole in alto</p>
+              </div>
+            </div>
+
+            {/* Verticale invertito */}
+            <div className="text-center">
+              <h3 className="text-lg font-semibold mb-4 text-green-700">Vertical-Inverted ✅</h3>
+              <div className="bg-green-50 rounded-lg p-4 flex justify-center border-2 border-green-200">
+                <NitrogenBottlePack
+                  bottles={sampleBottles}
+                  manifoldPressure={125}
+                  label="N2-002"
+                  orientation="vertical-inverted"
+                  size={0.5}
+                />
+              </div>
+              <div className="mt-4 text-sm text-green-700 font-medium">
+                <p>• Collettore in basso (cilindrico)</p>
+                <p>• A stretto contatto con bombole</p>
+                <p>• Bombole capovolte</p>
+                <p>• Valvole in basso</p>
+              </div>
+            </div>
+
+            {/* Orizzontale */}
+            <div className="text-center">
+              <h3 className="text-lg font-semibold mb-4 text-blue-700">Horizontal ✅</h3>
+              <div className="bg-blue-50 rounded-lg p-4 flex justify-center border-2 border-blue-200">
+                <NitrogenBottlePack
+                  bottles={sampleBottles}
+                  manifoldPressure={125}
+                  label="N2-003"
+                  orientation="horizontal"
+                  size={0.5}
+                />
+              </div>
+              <div className="mt-4 text-sm text-blue-700 font-medium">
+                <p>• Collettore a sinistra (rettangolare)</p>
+                <p>• A stretto contatto con bombole</p>
+                <p>• Connessioni ottimizzate</p>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Informazioni tecniche */}
-        <div className="bg-blue-50 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-blue-800 mb-4">Pacco Bombole Azoto - Funzionalità Avanzate</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
+        {/* Caratteristiche correzioni */}
+        <div className="bg-green-50 rounded-lg p-6 mt-6 border border-green-200">
+          <h3 className="text-xl font-semibold text-green-800 mb-4">✅ Correzioni Applicate</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
             <div>
-              <h4 className="font-semibold text-blue-700 mb-2">Dettagli Bombola:</h4>
-              <div className="space-y-1 text-sm text-blue-700">
-                <div>• <strong>Pressione:</strong> Visualizzata su ogni bombola</div>
-                <div>• <strong>Capacità:</strong> Litri per ogni bombola</div>
-                <div>• <strong>Abilitazione:</strong> Indicatore verde/grigio</div>
-                <div>• <strong>Numerazione:</strong> ID univoco bombola</div>
-              </div>
+              <h4 className="font-semibold text-green-700 mb-2">Collettori a Stretto Contatto:</h4>
+              <ul className="list-disc list-inside space-y-1 text-green-700">
+                <li><strong>Vertical-inverted:</strong> Collettore direttamente sotto le bombole</li>
+                <li><strong>Horizontal:</strong> Collettore direttamente a contatto laterale</li>
+                <li>Eliminati spazi inutili tra componenti</li>
+                <li>Connessioni più brevi e realistiche</li>
+              </ul>
             </div>
-
             <div>
-              <h4 className="font-semibold text-blue-700 mb-2">Controlli Avanzati:</h4>
-              <div className="space-y-1 text-sm text-blue-700">
-                <div>• <strong>Toggle:</strong> Abilita/disabilita bombole</div>
-                <div>• <strong>Collettore:</strong> Pressione media bombole attive</div>
-                <div>• <strong>Simulazione:</strong> Consumo automatico</div>
-                <div>• <strong>Indicatori:</strong> Colori per range pressione</div>
-              </div>
-            </div>
-
-            <div>
-              <h4 className="font-semibold text-blue-700 mb-2">Monitoraggio:</h4>
-              <div className="space-y-1 text-sm text-blue-700">
-                <div>• <strong>Individuale:</strong> Stato ogni bombola</div>
-                <div>• <strong>Collettivo:</strong> Media pressione pacco</div>
-                <div>• <strong>Capacità:</strong> Totale litri disponibili</div>
-                <div>• <strong>Allarmi:</strong> Visivi per basse pressioni</div>
-              </div>
+              <h4 className="font-semibold text-green-700 mb-2">Forme Collettori Ottimizzate:</h4>
+              <ul className="list-disc list-inside space-y-1 text-green-700">
+                <li><strong>Verticali:</strong> Forma cilindrica (rx = height/2)</li>
+                <li><strong>Orizzontale:</strong> Forma rettangolare (rx = 4px)</li>
+                <li>Ombreggiature coerenti con le forme</li>
+                <li>Connessioni distribuite uniformemente</li>
+              </ul>
             </div>
           </div>
         </div>
