@@ -1,0 +1,383 @@
+import React from 'react';
+
+// Configurazione connettore a T (seguendo lo stile dei componenti esistenti)
+const PIPE_T_CONNECTOR_CONFIG = {
+  // Dimensioni base
+  pipeWidth: 20,
+  connectorSize: 30,
+  flangeSize: 8,
+  
+  // Colori (coerenti con NitrogenPipe)
+  colors: {
+    pipe: "#4A90E2",         // blu per tubazione
+    pipeHighlight: "#7BB3F0", // blu chiaro per riflessi
+    pipeShadow: "#2C5282",   // blu scuro per ombre
+    flange: "#708090",       // grigio ardesia per flange
+    flangeHighlight: "#C0C0C0", // argento per riflessi flange
+    border: "#1F2937",       // grigio molto scuro per bordi
+    text: "#1F2937"
+  },
+  
+  // Stili 3D
+  strokeWidth: 2,
+  shadowOffset: 3,
+  fontSize: {
+    label: 10
+  }
+};
+
+const PipeTConnector = ({
+  x,
+  y,
+  orientation = 'top',
+  flowStates = { main1: true, main2: true, branch: true },
+  label,
+  showFlange = true,
+  size = 1,
+  pipeLength = 40,
+  className = ""
+}) => {
+  // Dimensioni scalate
+  const pipeWidth = PIPE_T_CONNECTOR_CONFIG.pipeWidth * size;
+  const connectorSize = PIPE_T_CONNECTOR_CONFIG.connectorSize * size;
+  const flangeSize = PIPE_T_CONNECTOR_CONFIG.flangeSize * size;
+  const scaledPipeLength = pipeLength * size;
+  
+  // Calcola le posizioni dei tre rami basandosi sull'orientamento
+  const getBranchPositions = () => {
+    switch (orientation) {
+      case 'top':
+        return {
+          main1: { x1: x - scaledPipeLength, y1: y, x2: x, y2: y },
+          main2: { x1: x, y1: y, x2: x + scaledPipeLength, y2: y },
+          branch: { x1: x, y1: y, x2: x, y2: y - scaledPipeLength }
+        };
+      case 'bottom':
+        return {
+          main1: { x1: x - scaledPipeLength, y1: y, x2: x, y2: y },
+          main2: { x1: x, y1: y, x2: x + scaledPipeLength, y2: y },
+          branch: { x1: x, y1: y, x2: x, y2: y + scaledPipeLength }
+        };
+      case 'left':
+        return {
+          main1: { x1: x, y1: y - scaledPipeLength, x2: x, y2: y },
+          main2: { x1: x, y1: y, x2: x, y2: y + scaledPipeLength },
+          branch: { x1: x, y1: y, x2: x - scaledPipeLength, y2: y }
+        };
+      case 'right':
+        return {
+          main1: { x1: x, y1: y - scaledPipeLength, x2: x, y2: y },
+          main2: { x1: x, y1: y, x2: x, y2: y + scaledPipeLength },
+          branch: { x1: x, y1: y, x2: x + scaledPipeLength, y2: y }
+        };
+    }
+  };
+  
+  const branches = getBranchPositions();
+  
+  // Componente Flangia
+  const Flange = ({ cx, cy, isVertical = false }) => (
+    <g>
+      <ellipse
+        cx={cx + PIPE_T_CONNECTOR_CONFIG.shadowOffset}
+        cy={cy + PIPE_T_CONNECTOR_CONFIG.shadowOffset}
+        rx={isVertical ? pipeWidth/2 + flangeSize : flangeSize}
+        ry={isVertical ? flangeSize : pipeWidth/2 + flangeSize}
+        fill={PIPE_T_CONNECTOR_CONFIG.colors.pipeShadow}
+        opacity={0.4}
+      />
+      <ellipse
+        cx={cx}
+        cy={cy}
+        rx={isVertical ? pipeWidth/2 + flangeSize : flangeSize}
+        ry={isVertical ? flangeSize : pipeWidth/2 + flangeSize}
+        fill={PIPE_T_CONNECTOR_CONFIG.colors.flange}
+        stroke={PIPE_T_CONNECTOR_CONFIG.colors.border}
+        strokeWidth={1}
+      />
+      <ellipse
+        cx={cx - 2}
+        cy={cy - 2}
+        rx={isVertical ? pipeWidth/4 + flangeSize/2 : flangeSize/2}
+        ry={isVertical ? flangeSize/2 : pipeWidth/4 + flangeSize/2}
+        fill={PIPE_T_CONNECTOR_CONFIG.colors.flangeHighlight}
+        opacity={0.6}
+      />
+      {[0, 90, 180, 270].map((angle, i) => {
+        const rad = (angle * Math.PI) / 180;
+        const boltRadius = flangeSize * 0.7;
+        const boltX = cx + Math.cos(rad) * boltRadius;
+        const boltY = cy + Math.sin(rad) * boltRadius;
+        return (
+          <circle
+            key={i}
+            cx={boltX}
+            cy={boltY}
+            r={2}
+            fill={PIPE_T_CONNECTOR_CONFIG.colors.pipeShadow}
+            stroke={PIPE_T_CONNECTOR_CONFIG.colors.border}
+            strokeWidth={0.5}
+          />
+        );
+      })}
+    </g>
+  );
+  
+  // Componente Tubo
+  const Pipe = ({ x1, y1, x2, y2, hasFlow }) => {
+    const isVertical = x1 === x2;
+    const length = isVertical ? Math.abs(y2 - y1) : Math.abs(x2 - x1);
+    const startX = Math.min(x1, x2);
+    const startY = Math.min(y1, y2);
+    
+    return (
+      <g>
+        <rect
+          x={isVertical ? startX - pipeWidth/2 + PIPE_T_CONNECTOR_CONFIG.shadowOffset : startX + PIPE_T_CONNECTOR_CONFIG.shadowOffset}
+          y={isVertical ? startY + PIPE_T_CONNECTOR_CONFIG.shadowOffset : startY - pipeWidth/2 + PIPE_T_CONNECTOR_CONFIG.shadowOffset}
+          width={isVertical ? pipeWidth : length}
+          height={isVertical ? length : pipeWidth}
+          fill={PIPE_T_CONNECTOR_CONFIG.colors.pipeShadow}
+          opacity={0.4}
+        />
+        <rect
+          x={isVertical ? startX - pipeWidth/2 : startX}
+          y={isVertical ? startY : startY - pipeWidth/2}
+          width={isVertical ? pipeWidth : length}
+          height={isVertical ? length : pipeWidth}
+          fill={`url(#pipe-gradient-${label || 'default'})`}
+          stroke={PIPE_T_CONNECTOR_CONFIG.colors.border}
+          strokeWidth={PIPE_T_CONNECTOR_CONFIG.strokeWidth}
+        />
+        <rect
+          x={isVertical ? startX - pipeWidth/2 + 2 : startX + 2}
+          y={isVertical ? startY + 2 : startY - pipeWidth/2 + 2}
+          width={isVertical ? pipeWidth/4 : length - 4}
+          height={isVertical ? length - 4 : pipeWidth/4}
+          fill="white"
+          opacity={0.4}
+        />
+      </g>
+    );
+  };
+  
+  // Calcola dimensioni SVG
+  const svgSize = (scaledPipeLength + connectorSize) * 2 + 40;
+  
+  return (
+    <div className={`inline-block ${className}`}>
+      <svg 
+        width={svgSize} 
+        height={svgSize}
+        viewBox={`${x - svgSize/2} ${y - svgSize/2} ${svgSize} ${svgSize}`}
+      >
+        {/* Definizioni gradienti */}
+        <defs>
+          <linearGradient id={`pipe-gradient-${label || 'default'}`} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor={PIPE_T_CONNECTOR_CONFIG.colors.pipeHighlight} />
+            <stop offset="50%" stopColor={PIPE_T_CONNECTOR_CONFIG.colors.pipe} />
+            <stop offset="100%" stopColor={PIPE_T_CONNECTOR_CONFIG.colors.pipeShadow} />
+          </linearGradient>
+          <filter id={`shadow-t-connector-${label}`} x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+            <feOffset dx="3" dy="3" result="offset" />
+            <feComponentTransfer>
+              <feFuncA type="linear" slope="0.3"/>
+            </feComponentTransfer>
+            <feMerge> 
+              <feMergeNode/>
+              <feMergeNode in="SourceGraphic"/> 
+            </feMerge>
+          </filter>
+        </defs>
+        
+        {/* Tre rami della T */}
+        <Pipe {...branches.main1} hasFlow={flowStates.main1} />
+        <Pipe {...branches.main2} hasFlow={flowStates.main2} />
+        <Pipe {...branches.branch} hasFlow={flowStates.branch} />
+        
+        {/* Connettore centrale */}
+        <circle
+          cx={x + PIPE_T_CONNECTOR_CONFIG.shadowOffset}
+          cy={y + PIPE_T_CONNECTOR_CONFIG.shadowOffset}
+          r={connectorSize/2}
+          fill={PIPE_T_CONNECTOR_CONFIG.colors.pipeShadow}
+          opacity={0.4}
+        />
+        <circle
+          cx={x}
+          cy={y}
+          r={connectorSize/2}
+          fill={`url(#pipe-gradient-${label || 'default'})`}
+          stroke={PIPE_T_CONNECTOR_CONFIG.colors.border}
+          strokeWidth={PIPE_T_CONNECTOR_CONFIG.strokeWidth}
+          filter={`url(#shadow-t-connector-${label})`}
+        />
+        
+        {/* Riflesso centrale */}
+        <ellipse
+          cx={x - connectorSize/4}
+          cy={y - connectorSize/4}
+          rx={connectorSize/4}
+          ry={connectorSize/6}
+          fill="white"
+          opacity={0.5}
+        />
+        
+
+        
+        {/* Etichetta opzionale */}
+        {label && (
+          <text
+            x={x}
+            y={y + connectorSize/2 + 20}
+            textAnchor="middle"
+            fontSize={PIPE_T_CONNECTOR_CONFIG.fontSize.label}
+            fontWeight="bold"
+            fill={PIPE_T_CONNECTOR_CONFIG.colors.text}
+          >
+            {label}
+          </text>
+        )}
+      </svg>
+    </div>
+  );
+};
+
+// Componente Demo
+const PipeTConnectorDemo = () => {
+  const [flowStates, setFlowStates] = React.useState({
+    demo1: { main1: true, main2: true, branch: false },
+    demo2: { main1: false, main2: true, branch: true },
+    demo3: { main1: true, main2: false, branch: true },
+    demo4: { main1: true, main2: true, branch: true }
+  });
+
+  return (
+    <div className="p-6 bg-gray-50 min-h-screen">
+      <div className="max-w-6xl mx-auto">
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">
+          Connettore a T per Tubazioni
+        </h1>
+        
+        <div className="grid grid-cols-2 gap-8">
+          {/* Orientamento Top */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-semibold mb-4 text-center">Orientamento Top</h3>
+            <div className="flex justify-center">
+              <PipeTConnector
+                x={150}
+                y={150}
+                orientation="top"
+                flowStates={flowStates.demo1}
+                label="T-001"
+                size={0.8}
+              />
+            </div>
+          </div>
+          
+          {/* Orientamento Bottom */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-semibold mb-4 text-center">Orientamento Bottom</h3>
+            <div className="flex justify-center">
+              <PipeTConnector
+                x={150}
+                y={150}
+                orientation="bottom"
+                flowStates={flowStates.demo2}
+                label="T-002"
+                size={0.8}
+              />
+            </div>
+          </div>
+          
+          {/* Orientamento Left */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-semibold mb-4 text-center">Orientamento Left</h3>
+            <div className="flex justify-center">
+              <PipeTConnector
+                x={150}
+                y={150}
+                orientation="left"
+                flowStates={flowStates.demo3}
+                label="T-003"
+                size={0.8}
+              />
+            </div>
+          </div>
+          
+          {/* Orientamento Right */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-semibold mb-4 text-center">Orientamento Right</h3>
+            <div className="flex justify-center">
+              <PipeTConnector
+                x={150}
+                y={150}
+                orientation="right"
+                flowStates={flowStates.demo4}
+                label="T-004"
+                size={0.8}
+              />
+            </div>
+          </div>
+        </div>
+        
+        {/* Esempio per lo schema P&ID */}
+        <div className="mt-8 bg-white rounded-lg shadow-md p-6">
+          <h3 className="text-lg font-semibold mb-4 text-center">
+            Esempio Configurazione per Schema P&ID (PV4 → PV5/PV6)
+          </h3>
+          <div className="flex justify-center">
+            <PipeTConnector
+              x={200}
+              y={200}
+              orientation="bottom"
+              flowStates={{ 
+                main1: true,  // verso PV5
+                main2: true,  // verso PV6
+                branch: true  // da PV4
+              }}
+              label=""
+              showFlange={false}
+              size={1.2}
+              pipeLength={60}
+            />
+          </div>
+          <div className="mt-4 text-center text-sm text-gray-600">
+            <p>Connessione a T con:</p>
+            <p>• Ramo superiore: da PV4</p>
+            <p>• Ramo sinistro: verso PV5 (serbatoio)</p>
+            <p>• Ramo destro: verso PV6 (torcia)</p>
+          </div>
+        </div>
+        
+        {/* Info tecniche */}
+        <div className="mt-8 bg-blue-50 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-blue-800 mb-4">Caratteristiche Tecniche</h3>
+          <div className="grid grid-cols-2 gap-6 text-sm text-blue-700">
+            <div>
+              <h4 className="font-semibold mb-2">Configurazione:</h4>
+              <ul className="list-disc list-inside space-y-1">
+                <li>4 orientamenti disponibili (top, bottom, left, right)</li>
+                <li>Controllo flusso indipendente per ogni ramo</li>
+                <li>Dimensioni scalabili</li>
+                <li>Flange opzionali con bulloni</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-2">Design 3D:</h4>
+              <ul className="list-disc list-inside space-y-1">
+                <li>Gradienti metallici realistici</li>
+                <li>Ombreggiature proiettate</li>
+                <li>Riflessi speculari</li>
+                <li>Compatibile con NitrogenPipe.tsx</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default PipeTConnectorDemo;
