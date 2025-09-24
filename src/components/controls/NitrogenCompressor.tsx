@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 
 // Configurazione compressore azoto (facilmente modificabile)
 const NITROGEN_COMPRESSOR_CONFIG = {
-  // Dimensioni base - ottimizzate
-  tankWidth: 200,    // Dimensione finale ottimizzata
-  tankHeight: 90,    // Dimensione finale ottimizzata
+  // Dimensioni base - aumentate
+  tankWidth: 200,    // Aumentato da 180
+  tankHeight: 90,    // Aumentato da 80
   motorWidth: 60,
   motorHeight: 60,
   
@@ -151,7 +151,7 @@ const NitrogenCompressor: React.FC<NitrogenCompressorProps> = ({
     }
   }, [state]);
 
-  // Dimensioni tubazione
+  // Dimensioni tubazione (dal progetto NitrogenPipe)
   const pipeDefaultDiameter = 20 * size;
   const pipeLength = 40 * size;
 
@@ -503,7 +503,7 @@ const NitrogenCompressor: React.FC<NitrogenCompressorProps> = ({
           {currentState.name}
         </text>
 
-        {/* Simbolo NC - spostato nella parte sinistra del serbatoio */}
+        {/* Simbolo NC - spostato nella parte sinistra del serbatoio più grande */}
         <text
           x={tankX + 50 + vibration}
           y={tankY + tankHeight/2 + 5 + vibration}
@@ -587,177 +587,4 @@ const NitrogenCompressor: React.FC<NitrogenCompressorProps> = ({
   );
 };
 
-// Componente Demo Finale
-const NitrogenCompressorFinalDemo: React.FC = () => {
-  const [compressor1State, setCompressor1State] = useState<CompressorState>('running');
-  const [compressor1Pressure, setCompressor1Pressure] = useState(8.5);
-  const [compressor1Temp, setCompressor1Temp] = useState(65);
-
-  // Simulazione parametri per compressore in funzione
-  useEffect(() => {
-    if (compressor1State === 'running') {
-      const interval = setInterval(() => {
-        setCompressor1Pressure(prev => {
-          const variation = (Math.random() - 0.5) * 0.3;
-          const newPressure = prev + variation;
-          return Math.max(7.5, Math.min(9.5, newPressure));
-        });
-        
-        setCompressor1Temp(prev => {
-          const variation = (Math.random() - 0.5) * 2;
-          const newTemp = prev + variation;
-          return Math.max(60, Math.min(70, newTemp));
-        });
-      }, 1000);
-
-      return () => clearInterval(interval);
-    }
-  }, [compressor1State]);
-
-  const toggleCompressor1 = () => {
-    if (compressor1State === 'stopped') {
-      setCompressor1State('running');
-      setCompressor1Pressure(8.0);
-      setCompressor1Temp(65);
-    } else {
-      setCompressor1State('stopped');
-      setCompressor1Pressure(0);
-      setCompressor1Temp(25);
-    }
-  };
-
-  return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto">
-        
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">NitrogenCompressor - Versione Finale Ottimizzata</h1>
-          <p className="text-gray-600 mb-4">
-            Compressore/Generatore di azoto con tutte le ottimizzazioni applicate
-          </p>
-          
-          {/* Caratteristiche principali */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-            <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-              <div className="font-semibold text-blue-800">Serbatoio Ottimizzato</div>
-              <div className="text-blue-700">200x90px - Più spazioso</div>
-            </div>
-            <div className="bg-green-50 p-3 rounded-lg border border-green-200">
-              <div className="font-semibold text-green-800">Layout Perfetto</div>
-              <div className="text-green-700">Zero sovrapposizioni</div>
-            </div>
-            <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
-              <div className="font-semibold text-purple-800">Tubo 4 Lati</div>
-              <div className="text-purple-700">Diametro 20px standard</div>
-            </div>
-            <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
-              <div className="font-semibold text-orange-800">4 Stati</div>
-              <div className="text-orange-700">Run/Stop/Standby/Alarm</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Demo Interattivo Principale */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h2 className="text-2xl font-semibold text-gray-700 mb-6">Demo Interattivo</h2>
-          <div className="flex justify-center">
-            <div className="text-center">
-              <div className="bg-gray-100 rounded-lg p-8 mb-4">
-                <NitrogenCompressor
-                  state={compressor1State}
-                  pressure={compressor1Pressure}
-                  temperature={compressor1Temp}
-                  label="NC-DEMO"
-                  pipeExitSide="right"
-                  manualControlEnabled={true}
-                  onStart={() => toggleCompressor1()}
-                  onStop={() => toggleCompressor1()}
-                  size={1}
-                />
-              </div>
-              <button
-                onClick={toggleCompressor1}
-                className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
-                  compressor1State === 'running'
-                    ? 'bg-red-500 text-white hover:bg-red-600'
-                    : 'bg-green-500 text-white hover:bg-green-600'
-                }`}
-              >
-                {compressor1State === 'running' ? 'STOP' : 'START'}
-              </button>
-              <p className="mt-2 text-sm text-gray-600">
-                Clicca START/STOP o usa i controlli integrati
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Stati Operativi */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-2xl font-semibold text-gray-700 mb-6">Stati Operativi</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
-            
-            <div className="text-center">
-              <h3 className="text-lg font-semibold mb-3 text-green-700">RUNNING</h3>
-              <div className="bg-green-50 rounded-lg p-4 border-2 border-green-200">
-                <NitrogenCompressor
-                  state="running"
-                  pressure={8.7}
-                  temperature={67}
-                  label="NC-RUN"
-                  pipeExitSide="right"
-                  size={0.55}
-                />
-              </div>
-            </div>
-
-            <div className="text-center">
-              <h3 className="text-lg font-semibold mb-3 text-yellow-700">STANDBY</h3>
-              <div className="bg-yellow-50 rounded-lg p-4 border-2 border-yellow-200">
-                <NitrogenCompressor
-                  state="standby"
-                  pressure={12.0}
-                  temperature={45}
-                  label="NC-STB"
-                  pipeExitSide="top"
-                  size={0.55}
-                />
-              </div>
-            </div>
-
-            <div className="text-center">
-              <h3 className="text-lg font-semibold mb-3 text-red-700">ALARM</h3>
-              <div className="bg-red-50 rounded-lg p-4 border-2 border-red-200">
-                <NitrogenCompressor
-                  state="alarm"
-                  pressure={2.1}
-                  temperature={89}
-                  label="NC-ALM"
-                  pipeExitSide="left"
-                  size={0.55}
-                />
-              </div>
-            </div>
-
-            <div className="text-center">
-              <h3 className="text-lg font-semibold mb-3 text-gray-700">STOPPED</h3>
-              <div className="bg-gray-50 rounded-lg p-4 border-2 border-gray-200">
-                <NitrogenCompressor
-                  state="stopped"
-                  pressure={0}
-                  temperature={25}
-                  label="NC-OFF"
-                  pipeExitSide="bottom"
-                  size={0.55}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default NitrogenCompressorFinalDemo;
+export default NitrogenCompressor;
