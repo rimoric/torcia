@@ -1,11 +1,11 @@
 import React from 'react';
 
-// Configurazione connettore a T (seguendo lo stile dei componenti esistenti) - DIMENSIONI RIDOTTE
+// Configurazione connettore a T (seguendo lo stile dei componenti esistenti)
 const PIPE_T_CONNECTOR_CONFIG = {
-  // Dimensioni base - ridotte del 50%
-  pipeWidth: 10,           // Ridotto da 20 a 10
-  connectorSize: 15,       // Ridotto da 30 a 15
-  flangeSize: 4,           // Ridotto da 8 a 4
+  // Dimensioni base
+  pipeWidth: 20,
+  connectorSize: 30,
+  flangeSize: 8,
   
   // Colori (coerenti con NitrogenPipe)
   colors: {
@@ -18,11 +18,11 @@ const PIPE_T_CONNECTOR_CONFIG = {
     text: "#1F2937"
   },
   
-  // Stili 3D - ridotti proporzionalmente
-  strokeWidth: 1.5,        // Ridotto da 2
-  shadowOffset: 2,         // Ridotto da 3
+  // Stili 3D
+  strokeWidth: 2,
+  shadowOffset: 3,
   fontSize: {
-    label: 8               // Ridotto da 10
+    label: 10
   }
 };
 
@@ -113,7 +113,7 @@ const PipeTConnector = ({
             key={i}
             cx={boltX}
             cy={boltY}
-            r={1.5} // Ridotto da 2
+            r={2}
             fill={PIPE_T_CONNECTOR_CONFIG.colors.pipeShadow}
             stroke={PIPE_T_CONNECTOR_CONFIG.colors.border}
             strokeWidth={0.5}
@@ -161,8 +161,8 @@ const PipeTConnector = ({
     );
   };
   
-  // Calcola dimensioni SVG - ridotte
-  const svgSize = (scaledPipeLength + connectorSize) * 2 + 30; // Ridotto da 40
+  // Calcola dimensioni SVG
+  const svgSize = (scaledPipeLength + connectorSize) * 2 + 40;
   
   return (
     <div className={`inline-block ${className}`}>
@@ -179,8 +179,8 @@ const PipeTConnector = ({
             <stop offset="100%" stopColor={PIPE_T_CONNECTOR_CONFIG.colors.pipeShadow} />
           </linearGradient>
           <filter id={`shadow-t-connector-${label}`} x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur in="SourceAlpha" stdDeviation="1.5"/> {/* Ridotto da 2 */}
-            <feOffset dx="2" dy="2" result="offset" /> {/* Ridotto da 3,3 */}
+            <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+            <feOffset dx="3" dy="3" result="offset" />
             <feComponentTransfer>
               <feFuncA type="linear" slope="0.3"/>
             </feComponentTransfer>
@@ -237,7 +237,7 @@ const PipeTConnector = ({
         {label && (
           <text
             x={x}
-            y={y + connectorSize/2 + 15} // Ridotto da 20
+            y={y + connectorSize/2 + 20}
             textAnchor="middle"
             fontSize={PIPE_T_CONNECTOR_CONFIG.fontSize.label}
             fontWeight="bold"
@@ -251,4 +251,140 @@ const PipeTConnector = ({
   );
 };
 
-export default PipeTConnector;
+// Componente Demo
+const PipeTConnectorDemo = () => {
+  const [flowStates, setFlowStates] = React.useState({
+    demo1: { main1: true, main2: true, branch: false },
+    demo2: { main1: false, main2: true, branch: true },
+    demo3: { main1: true, main2: false, branch: true },
+    demo4: { main1: true, main2: true, branch: true }
+  });
+
+  return (
+    <div className="p-6 bg-gray-50 min-h-screen">
+      <div className="max-w-6xl mx-auto">
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">
+          Connettore a T per Tubazioni
+        </h1>
+        
+        <div className="grid grid-cols-2 gap-8">
+          {/* Orientamento Top */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-semibold mb-4 text-center">Orientamento Top</h3>
+            <div className="flex justify-center">
+              <PipeTConnector
+                x={150}
+                y={150}
+                orientation="top"
+                flowStates={flowStates.demo1}
+                label="T-001"
+                size={0.8}
+              />
+            </div>
+          </div>
+          
+          {/* Orientamento Bottom */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-semibold mb-4 text-center">Orientamento Bottom</h3>
+            <div className="flex justify-center">
+              <PipeTConnector
+                x={150}
+                y={150}
+                orientation="bottom"
+                flowStates={flowStates.demo2}
+                label="T-002"
+                size={0.8}
+              />
+            </div>
+          </div>
+          
+          {/* Orientamento Left */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-semibold mb-4 text-center">Orientamento Left</h3>
+            <div className="flex justify-center">
+              <PipeTConnector
+                x={150}
+                y={150}
+                orientation="left"
+                flowStates={flowStates.demo3}
+                label="T-003"
+                size={0.8}
+              />
+            </div>
+          </div>
+          
+          {/* Orientamento Right */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-semibold mb-4 text-center">Orientamento Right</h3>
+            <div className="flex justify-center">
+              <PipeTConnector
+                x={150}
+                y={150}
+                orientation="right"
+                flowStates={flowStates.demo4}
+                label="T-004"
+                size={0.8}
+              />
+            </div>
+          </div>
+        </div>
+        
+        {/* Esempio per lo schema P&ID */}
+        <div className="mt-8 bg-white rounded-lg shadow-md p-6">
+          <h3 className="text-lg font-semibold mb-4 text-center">
+            Esempio Configurazione per Schema P&ID (PV4 → PV5/PV6)
+          </h3>
+          <div className="flex justify-center">
+            <PipeTConnector
+              x={200}
+              y={200}
+              orientation="bottom"
+              flowStates={{ 
+                main1: true,  // verso PV5
+                main2: true,  // verso PV6
+                branch: true  // da PV4
+              }}
+              label=""
+              showFlange={false}
+              size={1.2}
+              pipeLength={60}
+            />
+          </div>
+          <div className="mt-4 text-center text-sm text-gray-600">
+            <p>Connessione a T con:</p>
+            <p>• Ramo superiore: da PV4</p>
+            <p>• Ramo sinistro: verso PV5 (serbatoio)</p>
+            <p>• Ramo destro: verso PV6 (torcia)</p>
+          </div>
+        </div>
+        
+        {/* Info tecniche */}
+        <div className="mt-8 bg-blue-50 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-blue-800 mb-4">Caratteristiche Tecniche</h3>
+          <div className="grid grid-cols-2 gap-6 text-sm text-blue-700">
+            <div>
+              <h4 className="font-semibold mb-2">Configurazione:</h4>
+              <ul className="list-disc list-inside space-y-1">
+                <li>4 orientamenti disponibili (top, bottom, left, right)</li>
+                <li>Controllo flusso indipendente per ogni ramo</li>
+                <li>Dimensioni scalabili</li>
+                <li>Flange opzionali con bulloni</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-2">Design 3D:</h4>
+              <ul className="list-disc list-inside space-y-1">
+                <li>Gradienti metallici realistici</li>
+                <li>Ombreggiature proiettate</li>
+                <li>Riflessi speculari</li>
+                <li>Compatibile con NitrogenPipe.tsx</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default PipeTConnectorDemo;

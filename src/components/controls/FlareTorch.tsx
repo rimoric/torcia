@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 const FLARE_TORCH_CONFIG = {
   // Dimensioni base
   stackWidth: 15,      
-  stackHeight: 40,     
+  stackHeight: 40,
   baseWidth: 60,
   baseHeight: 30,
   
@@ -508,7 +508,6 @@ const FlareTorch: React.FC<FlareTorchProps> = ({
             </text>
           </g>
         )}
-
       </svg>
     </div>
   );

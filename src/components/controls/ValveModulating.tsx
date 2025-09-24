@@ -212,6 +212,90 @@ const ValveModulating: React.FC<ValveModulatingProps> = ({
           </linearGradient>
         </defs>
 
+        {/* Linee di connessione con effetto metallico */}
+        {isVertical ? (
+          <>
+            {/* Connessione superiore */}
+            <line
+              x1={centerX}
+              y1={10}
+              x2={centerX}
+              y2={centerY - valveHeight/2}
+              stroke={VALVE_MODULATING_CONFIG.colors.connection}
+              strokeWidth={VALVE_MODULATING_CONFIG.strokeWidth + 1}
+              opacity={Math.max(0.4, displayValue/100)}
+            />
+            <line
+              x1={centerX-1}
+              y1={10}
+              x2={centerX-1}
+              y2={centerY - valveHeight/2}
+              stroke="white"
+              strokeWidth={1}
+              opacity={0.4}
+            />
+            {/* Connessione inferiore */}
+            <line
+              x1={centerX}
+              y1={centerY + valveHeight/2}
+              x2={centerX}
+              y2={svgHeight - 30}
+              stroke={VALVE_MODULATING_CONFIG.colors.connection}
+              strokeWidth={VALVE_MODULATING_CONFIG.strokeWidth + 1}
+              opacity={Math.max(0.4, displayValue/100)}
+            />
+            <line
+              x1={centerX-1}
+              y1={centerY + valveHeight/2}
+              x2={centerX-1}
+              y2={svgHeight - 30}
+              stroke="white"
+              strokeWidth={1}
+              opacity={0.4}
+            />
+          </>
+        ) : (
+          <>
+            {/* Connessione sinistra */}
+            <line
+              x1={10}
+              y1={centerY}
+              x2={centerX - valveWidth/2}
+              y2={centerY}
+              stroke={VALVE_MODULATING_CONFIG.colors.connection}
+              strokeWidth={VALVE_MODULATING_CONFIG.strokeWidth + 1}
+              opacity={Math.max(0.4, displayValue/100)}
+            />
+            <line
+              x1={10}
+              y1={centerY-1}
+              x2={centerX - valveWidth/2}
+              y2={centerY-1}
+              stroke="white"
+              strokeWidth={1}
+              opacity={0.4}
+            />
+            {/* Connessione destra */}
+            <line
+              x1={centerX + valveWidth/2}
+              y1={centerY}
+              x2={svgWidth - 10}
+              y2={centerY}
+              stroke={VALVE_MODULATING_CONFIG.colors.connection}
+              strokeWidth={VALVE_MODULATING_CONFIG.strokeWidth + 1}
+              opacity={Math.max(0.4, displayValue/100)}
+            />
+            <line
+              x1={centerX + valveWidth/2}
+              y1={centerY-1}
+              x2={svgWidth - 10}
+              y2={centerY-1}
+              stroke="white"
+              strokeWidth={1}
+              opacity={0.4}
+            />
+          </>
+        )}
 
         {/* Tacche di riferimento (25%, 50%, 75%) */}
         {VALVE_MODULATING_CONFIG.showTicks && (
@@ -439,6 +523,33 @@ const ValveModulating: React.FC<ValveModulatingProps> = ({
           </g>
         )}
         
+        {/* Indicatore controllo manuale abilitato */}
+        {manualControlEnabled && (
+          <g>
+            <circle
+              cx={svgWidth - 13}
+              cy={17}
+              r={6}
+              fill="#059669"
+              opacity={0.4}
+            />
+            <circle
+              cx={svgWidth - 15}
+              cy={15}
+              r={6}
+              fill="#10B981"
+              stroke="#047857"
+              strokeWidth={1}
+            />
+            <circle
+              cx={svgWidth - 16}
+              cy={14}
+              r={2}
+              fill="white"
+              opacity={0.8}
+            />
+          </g>
+        )}
       </svg>
 
       {/* Slider popup per controllo manuale */}
@@ -479,4 +590,259 @@ const ValveModulating: React.FC<ValveModulatingProps> = ({
   );
 };
 
-export default ValveModulating;
+// Componente Demo per mostrare entrambi gli orientamenti
+const ValveModulatingDemo: React.FC = () => {
+  const [valve1Value, setValve1Value] = useState(25);
+  const [valve2Value, setValve2Value] = useState(55);
+  const [valve3Value, setValve3Value] = useState(85);
+  const [valve4Value, setValve4Value] = useState(10);
+  const [manualControlEnabled, setManualControlEnabled] = useState(false);
+
+  // Simulazione variazione automatica
+  const [autoMode, setAutoMode] = useState(false);
+
+  useEffect(() => {
+    if (autoMode) {
+      const interval = setInterval(() => {
+        setValve1Value(prev => Math.min(100, prev + Math.random() * 4 - 2));
+        setValve2Value(prev => Math.max(0, Math.min(100, prev + Math.random() * 6 - 3)));
+        setValve3Value(prev => Math.max(0, prev - Math.random() * 2));
+        setValve4Value(prev => Math.min(100, prev + Math.random() * 3));
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [autoMode]);
+
+  return (
+    <div className="p-6 bg-gray-50 min-h-screen">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">
+          Controlli Valvola Modulante - Dashboard Industriale
+        </h1>
+        
+        {/* Pannello controlli */}
+        <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+          <h2 className="text-lg font-semibold mb-4">Controlli Globali</h2>
+          <div className="flex items-center gap-6">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={manualControlEnabled}
+                onChange={(e) => setManualControlEnabled(e.target.checked)}
+                className="rounded"
+              />
+              <span className="text-sm font-medium">Abilita Comandi Manuali</span>
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={autoMode}
+                onChange={(e) => setAutoMode(e.target.checked)}
+                className="rounded"
+              />
+              <span className="text-sm font-medium">Simulazione Automatica</span>
+            </label>
+            {manualControlEnabled && (
+              <span className="text-xs text-green-600 font-medium">
+                Controllo manuale attivo - cliccare sulle valvole per regolarle
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Griglia delle valvole modulanti */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          
+          {/* Valvola Orizzontale - Range CHIUSA */}
+          <div className="bg-white rounded-lg shadow-md p-4">
+            <h3 className="text-sm font-semibold mb-3 text-center text-gray-700">
+              Orizzontale - Chiusa
+            </h3>
+            <div className="flex justify-center">
+              <ValveModulating
+                value={valve1Value}
+                label="VM001"
+                orientation="horizontal"
+                manualControlEnabled={manualControlEnabled}
+                onChange={setValve1Value}
+              />
+            </div>
+            <div className="mt-3 text-xs text-center space-y-1">
+              <div className="text-gray-600">
+                Valore: <span className="font-semibold text-red-600">{Math.round(valve1Value)}%</span>
+              </div>
+              <div className="text-gray-600">
+                Stato: <span className="font-semibold text-red-600">CHIUSA</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Valvola Orizzontale - Range PARZIALE */}
+          <div className="bg-white rounded-lg shadow-md p-4">
+            <h3 className="text-sm font-semibold mb-3 text-center text-gray-700">
+              Orizzontale - Parziale
+            </h3>
+            <div className="flex justify-center">
+              <ValveModulating
+                value={valve2Value}
+                label="VM002"
+                orientation="horizontal"
+                manualControlEnabled={manualControlEnabled}
+                onChange={setValve2Value}
+              />
+            </div>
+            <div className="mt-3 text-xs text-center space-y-1">
+              <div className="text-gray-600">
+                Valore: <span className="font-semibold text-yellow-600">{Math.round(valve2Value)}%</span>
+              </div>
+              <div className="text-gray-600">
+                Stato: <span className="font-semibold text-yellow-600">PARZIALE</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Valvola Verticale - Range APERTA */}
+          <div className="bg-white rounded-lg shadow-md p-4">
+            <h3 className="text-sm font-semibold mb-3 text-center text-gray-700">
+              Verticale - Aperta
+            </h3>
+            <div className="flex justify-center">
+              <ValveModulating
+                value={valve3Value}
+                label="VM003"
+                orientation="vertical"
+                manualControlEnabled={manualControlEnabled}
+                onChange={setValve3Value}
+              />
+            </div>
+            <div className="mt-3 text-xs text-center space-y-1">
+              <div className="text-gray-600">
+                Valore: <span className="font-semibold text-green-600">{Math.round(valve3Value)}%</span>
+              </div>
+              <div className="text-gray-600">
+                Stato: <span className="font-semibold text-green-600">APERTA</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Valvola Verticale - Range CHIUSA */}
+          <div className="bg-white rounded-lg shadow-md p-4">
+            <h3 className="text-sm font-semibold mb-3 text-center text-gray-700">
+              Verticale - Chiusa
+            </h3>
+            <div className="flex justify-center">
+              <ValveModulating
+                value={valve4Value}
+                label="VM004"
+                orientation="vertical"
+                manualControlEnabled={manualControlEnabled}
+                onChange={setValve4Value}
+              />
+            </div>
+            <div className="mt-3 text-xs text-center space-y-1">
+              <div className="text-gray-600">
+                Valore: <span className="font-semibold text-red-600">{Math.round(valve4Value)}%</span>
+              </div>
+              <div className="text-gray-600">
+                Stato: <span className="font-semibold text-red-600">CHIUSA</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Esempi con dimensioni diverse */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <h2 className="text-lg font-semibold mb-4">Varianti Dimensionali</h2>
+          <div className="flex flex-wrap gap-8 items-center justify-center">
+            
+            <div className="text-center">
+              <ValveModulating
+                value={75}
+                label="Small"
+                orientation="horizontal"
+                width={50}
+                height={25}
+                manualControlEnabled={manualControlEnabled}
+                onChange={() => {}}
+              />
+              <p className="text-xs text-gray-600 mt-2">Piccola (50x25)</p>
+            </div>
+
+            <div className="text-center">
+              <ValveModulating
+                value={45}
+                label="Normal"
+                orientation="horizontal"
+                manualControlEnabled={manualControlEnabled}
+                onChange={() => {}}
+              />
+              <p className="text-xs text-gray-600 mt-2">Normale (70x35)</p>
+            </div>
+
+            <div className="text-center">
+              <ValveModulating
+                value={90}
+                label="Large"
+                orientation="vertical"
+                width={90}
+                height={45}
+                manualControlEnabled={manualControlEnabled}
+                onChange={() => {}}
+              />
+              <p className="text-xs text-gray-600 mt-2">Grande (90x45)</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Informazioni tecniche */}
+        <div className="bg-blue-50 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-blue-800 mb-4">Caratteristiche Valvola Modulante</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <div>
+              <h4 className="font-semibold text-blue-700 mb-2">Range di Colori:</h4>
+              <div className="space-y-2 text-sm text-blue-700">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-red-500 rounded"></div>
+                  <span><strong>0-30%:</strong> CHIUSA (Rosso)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-yellow-500 rounded"></div>
+                  <span><strong>31-70%:</strong> PARZIALE (Giallo)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-green-500 rounded"></div>
+                  <span><strong>71-100%:</strong> APERTA (Verde)</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="font-semibold text-blue-700 mb-2">Effetti Dinamici:</h4>
+              <div className="space-y-1 text-sm text-blue-700">
+                <div>• <strong>Animazione graduale</strong> dei valori</div>
+                <div>• <strong>Freccia variabile</strong> per intensità flusso</div>
+                <div>• <strong>Barra di riempimento</strong> interna</div>
+                <div>• <strong>Tacche di riferimento</strong> a 25%, 50%, 75%</div>
+                <div>• <strong>Connessioni</strong> con opacità dinamica</div>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="font-semibold text-blue-700 mb-2">Controlli:</h4>
+              <div className="space-y-1 text-sm text-blue-700">
+                <div>• <strong>Precisione:</strong> Step 1%</div>
+                <div>• <strong>Range:</strong> 0-100%</div>
+                <div>• <strong>Slider popup</strong> per controllo manuale</div>
+                <div>• <strong>Visualizzazione:</strong> Valore % e stato</div>
+                <div>• <strong>Orientamenti:</strong> Orizzontale e verticale</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ValveModulatingDemo;

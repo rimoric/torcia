@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 // Configurazione valvola (facilmente modificabile)
 const VALVE_CONFIG = {
@@ -143,6 +143,85 @@ const Valve2Way: React.FC<Valve2WayProps> = ({
         </defs>
 
         {/* Linee di connessione con effetto metallico */}
+        {isVertical ? (
+          <>
+            {/* Connessione superiore */}
+            <line
+              x1={centerX}
+              y1={10}
+              x2={centerX}
+              y2={centerY - valveHeight/2}
+              stroke={VALVE_CONFIG.colors.connection}
+              strokeWidth={VALVE_CONFIG.strokeWidth + 1}
+            />
+            <line
+              x1={centerX-1}
+              y1={10}
+              x2={centerX-1}
+              y2={centerY - valveHeight/2}
+              stroke="white"
+              strokeWidth={1}
+              opacity={0.4}
+            />
+            {/* Connessione inferiore */}
+            <line
+              x1={centerX}
+              y1={centerY + valveHeight/2}
+              x2={centerX}
+              y2={svgHeight - 10}
+              stroke={VALVE_CONFIG.colors.connection}
+              strokeWidth={VALVE_CONFIG.strokeWidth + 1}
+            />
+            <line
+              x1={centerX-1}
+              y1={centerY + valveHeight/2}
+              x2={centerX-1}
+              y2={svgHeight - 10}
+              stroke="white"
+              strokeWidth={1}
+              opacity={0.4}
+            />
+          </>
+        ) : (
+          <>
+            {/* Connessione sinistra */}
+            <line
+              x1={10}
+              y1={centerY}
+              x2={centerX - valveWidth/2}
+              y2={centerY}
+              stroke={VALVE_CONFIG.colors.connection}
+              strokeWidth={VALVE_CONFIG.strokeWidth + 1}
+            />
+            <line
+              x1={10}
+              y1={centerY-1}
+              x2={centerX - valveWidth/2}
+              y2={centerY-1}
+              stroke="white"
+              strokeWidth={1}
+              opacity={0.4}
+            />
+            {/* Connessione destra */}
+            <line
+              x1={centerX + valveWidth/2}
+              y1={centerY}
+              x2={svgWidth - 10}
+              y2={centerY}
+              stroke={VALVE_CONFIG.colors.connection}
+              strokeWidth={VALVE_CONFIG.strokeWidth + 1}
+            />
+            <line
+              x1={centerX + valveWidth/2}
+              y1={centerY-1}
+              x2={svgWidth - 10}
+              y2={centerY-1}
+              stroke="white"
+              strokeWidth={1}
+              opacity={0.4}
+            />
+          </>
+        )}
         
         {/* Ombra del corpo valvola */}
         <rect
@@ -309,9 +388,229 @@ const Valve2Way: React.FC<Valve2WayProps> = ({
           </g>
         )}
         
+        {/* Indicatore controllo manuale abilitato con effetto 3D */}
+        {manualControlEnabled && (
+          <g>
+            <circle
+              cx={svgWidth - 13}
+              cy={17}
+              r={6}
+              fill="#059669"
+              opacity={0.4}
+            />
+            <circle
+              cx={svgWidth - 15}
+              cy={15}
+              r={6}
+              fill="#10B981"
+              stroke="#047857"
+              strokeWidth={1}
+            />
+            <circle
+              cx={svgWidth - 16}
+              cy={14}
+              r={2}
+              fill="white"
+              opacity={0.8}
+            />
+          </g>
+        )}
       </svg>
     </div>
   );
 };
 
-export default Valve2Way;
+// Componente Demo per mostrare entrambe le orientazioni
+const Valve2WayDemo: React.FC = () => {
+  const [valve1Open, setValve1Open] = useState(false);
+  const [valve2Open, setValve2Open] = useState(true);
+  const [valve3Open, setValve3Open] = useState(false);
+  const [valve4Open, setValve4Open] = useState(true);
+  const [manualControlEnabled, setManualControlEnabled] = useState(false);
+
+  return (
+    <div className="p-6 bg-gray-50 min-h-screen">
+      <div className="max-w-6xl mx-auto">
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">
+          Controlli Valvola 2 Vie - Dashboard Industriale
+        </h1>
+        
+        {/* Pannello controlli */}
+        <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+          <h2 className="text-lg font-semibold mb-4">Controlli Globali</h2>
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={manualControlEnabled}
+                onChange={(e) => setManualControlEnabled(e.target.checked)}
+                className="rounded"
+              />
+              <span className="text-sm font-medium">Abilita Comandi Manuali</span>
+            </label>
+            {manualControlEnabled && (
+              <span className="text-xs text-green-600 font-medium">
+                Controllo manuale attivo - cliccare sulle valvole per cambiarle
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Griglia delle valvole */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          
+          {/* Valvola Orizzontale - OFF */}
+          <div className="bg-white rounded-lg shadow-md p-4">
+            <h3 className="text-sm font-semibold mb-3 text-center text-gray-700">
+              Valvola Orizzontale - OFF
+            </h3>
+            <div className="flex justify-center">
+              <Valve2Way
+                isOpen={valve1Open}
+                label="PV001"
+                orientation="horizontal"
+                manualControlEnabled={manualControlEnabled}
+                onToggle={() => setValve1Open(!valve1Open)}
+              />
+            </div>
+            <div className="mt-3 text-xs text-center text-gray-600">
+              Stato: <span className="font-semibold text-yellow-600">CHIUSA</span>
+            </div>
+          </div>
+
+          {/* Valvola Orizzontale - ON */}
+          <div className="bg-white rounded-lg shadow-md p-4">
+            <h3 className="text-sm font-semibold mb-3 text-center text-gray-700">
+              Valvola Orizzontale - ON
+            </h3>
+            <div className="flex justify-center">
+              <Valve2Way
+                isOpen={valve2Open}
+                label="PV002"
+                orientation="horizontal"
+                manualControlEnabled={manualControlEnabled}
+                onToggle={() => setValve2Open(!valve2Open)}
+              />
+            </div>
+            <div className="mt-3 text-xs text-center text-gray-600">
+              Stato: <span className="font-semibold text-blue-500">APERTA</span>
+            </div>
+          </div>
+
+          {/* Valvola Verticale - OFF */}
+          <div className="bg-white rounded-lg shadow-md p-4">
+            <h3 className="text-sm font-semibold mb-3 text-center text-gray-700">
+              Valvola Verticale - OFF
+            </h3>
+            <div className="flex justify-center">
+              <Valve2Way
+                isOpen={valve3Open}
+                label="PV003"
+                orientation="vertical"
+                manualControlEnabled={manualControlEnabled}
+                onToggle={() => setValve3Open(!valve3Open)}
+              />
+            </div>
+            <div className="mt-3 text-xs text-center text-gray-600">
+              Stato: <span className="font-semibold text-yellow-600">CHIUSA</span>
+            </div>
+          </div>
+
+          {/* Valvola Verticale - ON */}
+          <div className="bg-white rounded-lg shadow-md p-4">
+            <h3 className="text-sm font-semibold mb-3 text-center text-gray-700">
+              Valvola Verticale - ON
+            </h3>
+            <div className="flex justify-center">
+              <Valve2Way
+                isOpen={valve4Open}
+                label="PV004"
+                orientation="vertical"
+                manualControlEnabled={manualControlEnabled}
+                onToggle={() => setValv4Open(!valve4Open)}
+              />
+            </div>
+            <div className="mt-3 text-xs text-center text-gray-600">
+              Stato: <span className="font-semibold text-blue-500">APERTA</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Esempio di integrazione con dimensioni personalizzate */}
+        <div className="mt-8 bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-lg font-semibold mb-4">Esempio con Dimensioni Personalizzate</h2>
+          <div className="flex flex-wrap gap-8 items-center justify-center">
+            
+            {/* Valvola piccola */}
+            <div className="text-center">
+              <Valve2Way
+                isOpen={true}
+                label="Small"
+                orientation="horizontal"
+                width={40}
+                height={20}
+                manualControlEnabled={manualControlEnabled}
+                onToggle={() => {}}
+              />
+              <p className="text-xs text-gray-600 mt-2">Piccola (40x20)</p>
+            </div>
+
+            {/* Valvola media (default) */}
+            <div className="text-center">
+              <Valve2Way
+                isOpen={false}
+                label="Medium"
+                orientation="horizontal"
+                manualControlEnabled={manualControlEnabled}
+                onToggle={() => {}}
+              />
+              <p className="text-xs text-gray-600 mt-2">Media (60x30)</p>
+            </div>
+
+            {/* Valvola grande */}
+            <div className="text-center">
+              <Valve2Way
+                isOpen={true}
+                label="Large"
+                orientation="vertical"
+                width={80}
+                height={40}
+                manualControlEnabled={manualControlEnabled}
+                onToggle={() => {}}
+              />
+              <p className="text-xs text-gray-600 mt-2">Grande (80x40)</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Informazioni tecniche */}
+        <div className="mt-8 bg-blue-50 rounded-lg p-4">
+          <h3 className="text-lg font-semibold text-blue-800 mb-3">Caratteristiche Tecniche</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <h4 className="font-semibold text-blue-700">Stati Visuali:</h4>
+              <ul className="list-disc list-inside text-blue-700 space-y-1">
+                <li><span className="inline-block w-3 h-3 bg-sky-300 rounded mr-2"></span>ON - Blu chiaro (#87CEEB)</li>
+                <li><span className="inline-block w-3 h-3 bg-yellow-400 rounded mr-2"></span>OFF - Giallo (#FFD700)</li>
+                <li>Freccia direzionale quando aperta</li>
+                <li>Indicatore di stato (pallino colorato)</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-blue-700">Configurabilità:</h4>
+              <ul className="list-disc list-inside text-blue-700 space-y-1">
+                <li>Orientamento orizzontale/verticale</li>
+                <li>Dimensioni personalizzabili</li>
+                <li>Etichette modificabili</li>
+                <li>Controllo manuale opzionale</li>
+                <li>Colori configurabili nel codice</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Valve2WayDemo;

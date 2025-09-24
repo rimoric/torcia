@@ -575,8 +575,6 @@ const LPGTank: React.FC<LPGTankProps> = ({
               fill={tempColors.primary}
               fontWeight="bold"
             >
-{/*              {displayTemp < 10 || displayTemp > 60 ? 'ALLARME' : 
-               displayTemp > 40 ? 'ATTENZIONE' : 'NORMALE'} */}
             </text>
           </g>
         )}

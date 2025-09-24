@@ -90,8 +90,13 @@ interface NitrogenBottlePackProps {
 }
 
 const NitrogenBottlePack: React.FC<NitrogenBottlePackProps> = ({
-  bottles,
-  manifoldPressure,
+  bottles = [
+    // Dati di esempio di default
+    { pressure: 180, capacity: 50, enabled: true },
+    { pressure: 120, capacity: 50, enabled: true },
+    { pressure: 85, capacity: 50, enabled: false }
+  ],
+  manifoldPressure = 125, // Default per la demo
   label = "N2-001",
   orientation = 'vertical',
   size = 1,
@@ -518,20 +523,6 @@ const NitrogenBottlePack: React.FC<NitrogenBottlePackProps> = ({
         {/* Etichetta del pacco */}
         {NITROGEN_BOTTLES_CONFIG.showLabel && (
           <g>
-            {/* Ombra dell'etichetta */}
-            <text
-              x={orientation === 'horizontal' ? centerX + 1 : centerX + 1}
-              y={orientation === 'vertical-inverted' ? svgHeight - 4.5 : 
-                 orientation === 'horizontal' ? 18 : 
-                 svgHeight - 12.6} // Ridotto da 5, 20, 14
-              textAnchor="middle"
-              fontSize={NITROGEN_BOTTLES_CONFIG.fontSize.label}
-              fontWeight="bold"
-              fill="black"
-              opacity={0.3}
-            >
-{/*              {label} - N₂ PACK {isInverted ? "(INVERTED)" : ""} */}
-            </text>
             {/* Etichetta principale */}
             <text
               x={orientation === 'horizontal' ? centerX : centerX}
@@ -543,7 +534,7 @@ const NitrogenBottlePack: React.FC<NitrogenBottlePackProps> = ({
               fontWeight="bold"
               fill={NITROGEN_BOTTLES_CONFIG.colors.text}
             >
-{/*              {label} - N₂ PACK {isInverted ? "(INVERTED)" : ""} */}
+              {label} - N₂ PACK
             </text>
           </g>
         )}
