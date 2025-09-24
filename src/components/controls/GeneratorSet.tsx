@@ -119,7 +119,7 @@ const GeneratorSet: React.FC<GeneratorSetProps> = ({
   const height = GENERATOR_SET_CONFIG.height * size;
   
   // Colori attuali basati sullo stato
-  const currentState = GENERATOR_SET_CONFIG.states[state] || GENERATOR_SET_CONFIG.states.stopped;
+  const currentState = GENERATOR_SET_CONFIG.states[state];
   const currentColors = currentState.colors;
   
   // Calcolo dimensioni SVG
