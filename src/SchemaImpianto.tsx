@@ -66,7 +66,7 @@ const SchemaImpianto = () => {
             }}
             label=""
             showFlange={false}
-            size={1}
+            size={0.5}
             pipeLength={50}
           />
         </div>
@@ -95,7 +95,7 @@ const SchemaImpianto = () => {
             }}
             label=""
             showFlange={false}
-            size={1}
+            size={0.5}
             pipeLength={50}
           />
         </div>
