@@ -54,7 +54,7 @@ const SchemaImpianto = () => {
       <div className="relative w-[800px] h-[600px]">
         
         {/* Connettore a T sinistra per PR2 */}
-        <div className="absolute" style={{ left: '270px', top: '400px' }}>
+        <div className="absolute" style={{ left: '265px', top: '395px' }}>
           <PipeTConnector
             x={0}
             y={0}
@@ -67,7 +67,7 @@ const SchemaImpianto = () => {
             label=""
             showFlange={false}
             size={0.5}
-            pipeLength={50}
+            pipeLength={100}
           />
         </div>
 
@@ -83,7 +83,7 @@ const SchemaImpianto = () => {
         </div>
 
         {/* Connettore a T centrale */}
-        <div className="absolute" style={{ left: '270px', top: '140px' }}>
+        <div className="absolute" style={{ left: '265px', top: '135px' }}>
           <PipeTConnector
             x={0}
             y={0}
@@ -96,7 +96,7 @@ const SchemaImpianto = () => {
             label=""
             showFlange={false}
             size={0.5}
-            pipeLength={50}
+            pipeLength={100}
           />
         </div>
 
@@ -167,7 +167,7 @@ const SchemaImpianto = () => {
 		</div>
 
 		{/* Compressore Azoto NC1 */}
-		<div className="absolute" style={{ left: '530px', top: '-80px' }}>
+		<div className="absolute" style={{ left: '515px', top: '-95px' }}>
 		  <NitrogenCompressor
 		    state={compressorNC1State}
 		    pressure={compressorNC1Pressure}
@@ -185,7 +185,7 @@ const SchemaImpianto = () => {
 		      setCompressorNC1Pressure(0);
 		      setCompressorNC1Temp(25);
 		    }}
-		    size={1}
+		    size={0.8}
 		  />
 		</div>
 
