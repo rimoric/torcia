@@ -294,7 +294,7 @@ const SchemaImpianto = () => {
 		    orientation="horizontal"
 		    hasFlow={true}
 		    size={0.5}
-		    length={158}
+		    length={157}
 		  />
 		</div>
 
