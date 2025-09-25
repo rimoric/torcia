@@ -106,7 +106,7 @@ const SchemaImpianto = () => {
             isOpen={valvePV1Open}
             label="PV1"
             orientation="horizontal"
-//		    flowDirection="left"
+		    flowDirection="left"
             manualControlEnabled={false}
             onToggle={() => setValvePV1Open(!valvePV1Open)}
           />
