@@ -37,7 +37,8 @@ const SchemaImpianto = () => {
   const [bottlePackData, setBottlePackData] = useState([
     { pressure: 180, capacity: 50, enabled: true },
     { pressure: 120, capacity: 50, enabled: true },
-    { pressure: 85, capacity: 50, enabled: false }
+    { pressure: 90, capacity: 50, enabled: false },
+    { pressure: 190, capacity: 50, enabled: true }
   ]);
   const [manifoldPressure, setManifoldPressure] = useState(125);
 
