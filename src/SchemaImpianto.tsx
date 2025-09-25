@@ -72,11 +72,12 @@ const SchemaImpianto = () => {
         </div>
 
         {/* Valvola PV2 sopra il connettore T sinistra */}
-        <div className="absolute" style={{ left: '50px', top: '40px' }}>
+        <div className="absolute" style={{ left: '150px', top: '164px' }}>
           <ValveTwoWay
             isOpen={valvePV2Open}
             label="PV2"
-            orientation="vertical"
+            orientation="horizontal"
+		    flowDirection="right"
             manualControlEnabled={false}
             onToggle={() => setValvePV2Open(!valvePV2Open)}
           />
@@ -206,7 +207,7 @@ const SchemaImpianto = () => {
 		</div>
 
 		{/* Pacco Bombole Azoto N2-1 */}
-		<div className="absolute" style={{ left: '10px', top: '-130px' }}>
+		<div className="absolute" style={{ left: '-30px', top: '-130px' }}>
 		  <NitrogenBottlePack
 		    bottles={bottlePackData}
 		    manifoldPressure={manifoldPressure}
@@ -252,7 +253,7 @@ const SchemaImpianto = () => {
 		</div>
 
 		{/* Curva alto-destra a destra del sistema */}
-		<div className="absolute" style={{ left: '100px', top: '155px' }}>
+		<div className="absolute" style={{ left: '60px', top: '155px' }}>
 		  <NitrogenElbow
 		    direction="bottom-right"
 		    hasFlow={true}
@@ -263,12 +264,22 @@ const SchemaImpianto = () => {
 		</div>
 
 		{/* Tubo orizzontale sx */}
-		<div className="absolute" style={{ left: '125px', top: '195px' }}>
+		<div className="absolute" style={{ left: '85px', top: '195px' }}>
 		  <NitrogenStraightPipe
 		    orientation="horizontal"
 		    hasFlow={true}
 		    size={0.5}
-		    length={310}
+		    length={170}
+		  />
+		</div>
+
+		{/* Tubo orizzontale sx */}
+		<div className="absolute" style={{ left: '230px', top: '195px' }}>
+		  <NitrogenStraightPipe
+		    orientation="horizontal"
+		    hasFlow={true}
+		    size={0.5}
+		    length={100}
 		  />
 		</div>
 
@@ -303,7 +314,7 @@ const SchemaImpianto = () => {
 		</div>
 
 		{/* Tubo verticale sx */}
-		<div className="absolute" style={{ left: '100px', top: '110px' }}>
+		<div className="absolute" style={{ left: '60px', top: '110px' }}>
 		  <NitrogenStraightPipe
 		    orientation="vertical"
 		    hasFlow={true}
