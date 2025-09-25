@@ -54,7 +54,7 @@ const SchemaImpianto = () => {
       <div className="relative w-[800px] h-[600px]">
         
         {/* Connettore a T sinistra per PR2 */}
-        <div className="absolute" style={{ left: '265px', top: '395px' }}>
+        <div className="absolute" style={{ left: '335px', top: '395px' }}>
           <PipeTConnector
             x={0}
             y={0}
@@ -83,7 +83,7 @@ const SchemaImpianto = () => {
         </div>
 
         {/* Connettore a T centrale */}
-        <div className="absolute" style={{ left: '265px', top: '135px' }}>
+        <div className="absolute" style={{ left: '335px', top: '135px' }}>
           <PipeTConnector
             x={0}
             y={0}
@@ -101,7 +101,7 @@ const SchemaImpianto = () => {
         </div>
 
         {/* Valvola PV1 sull'uscita destra del connettore */}
-        <div className="absolute" style={{ left: '360px', top: '164px' }}>
+        <div className="absolute" style={{ left: '430px', top: '164px' }}>
           <ValveTwoWay
             isOpen={valvePV1Open}
             label="PV1"
@@ -113,7 +113,7 @@ const SchemaImpianto = () => {
         </div>
 
         {/* Valvola Modulante PR2 */}
-		<div className="absolute" style={{ left: '181px', top: '154px' }}>
+		<div className="absolute" style={{ left: '251px', top: '154px' }}>
 			<ValveModulating
 				value={valvePR2Value}
 				label="PR2"
@@ -124,7 +124,7 @@ const SchemaImpianto = () => {
 		</div>
 
 		{/* Valvola PV4 - verticale con flusso alto -> basso */}
-		<div className="absolute" style={{ left: '295px', top: '330px' }}>
+		<div className="absolute" style={{ left: '365px', top: '330px' }}>
 		  <ValveTwoWay
 		    isOpen={valvePV4Open}
 		    label="PV4"
@@ -136,7 +136,7 @@ const SchemaImpianto = () => {
 		</div>
 
 		{/* Valvola Modulante PR1 - verticale con flusso verso il basso */}
-		<div className="absolute" style={{ left: '283px', top: '220px' }}>
+		<div className="absolute" style={{ left: '353px', top: '220px' }}>
 			<ValveModulating
 				value={valvePR1Value}
 				label="PR1"
@@ -147,7 +147,7 @@ const SchemaImpianto = () => {
 		</div>
 
 		{/* Valvola PV5 - orizzontale con flusso dx -> sx */}
-		<div className="absolute" style={{ left: '200px', top: '425px' }}>
+		<div className="absolute" style={{ left: '270px', top: '425px' }}>
 		  <ValveTwoWay
 		    isOpen={valvePV5Open}
 		    label="PV5"
@@ -159,7 +159,7 @@ const SchemaImpianto = () => {
 		</div>
 
 		{/* Valvola PV6 - orizzontale con flusso sx -> dx */}
-		<div className="absolute" style={{ left: '360px', top: '425px' }}>
+		<div className="absolute" style={{ left: '430px', top: '425px' }}>
 		  <ValveTwoWay
 		    isOpen={valvePV6Open}
 		    label="PV6"
@@ -228,7 +228,7 @@ const SchemaImpianto = () => {
 		</div>
 
 		{/* Torcia GPL FT1 - posizionata sopra il serbatoio ma a sinistra */}
-		<div className="absolute" style={{ left: '500px', top: '380px' }}>
+		<div className="absolute" style={{ left: '570px', top: '380px' }}>
 		  <FlareTorch
 		    isLit={torchState.isLit}
 		    label="FT1"
@@ -268,17 +268,17 @@ const SchemaImpianto = () => {
 		    orientation="horizontal"
 		    hasFlow={true}
 		    size={0.5}
-		    length={170}
+		    length={310}
 		  />
 		</div>
 
 		{/* Tubo orizzontale dx */}
-		<div className="absolute" style={{ left: '440px', top: '195px' }}>
+		<div className="absolute" style={{ left: '510px', top: '195px' }}>
 		  <NitrogenStraightPipe
 		    orientation="horizontal"
 		    hasFlow={true}
 		    size={0.5}
-		    length={310}
+		    length={170}
 		  />
 		</div>
 
@@ -288,12 +288,12 @@ const SchemaImpianto = () => {
 		    orientation="horizontal"
 		    hasFlow={true}
 		    size={0.5}
-		    length={187}
+		    length={327}
 		  />
 		</div>
 
 		{/* Tubo orizzontale dx */}
-		<div className="absolute" style={{ left: '440px', top: '455px' }}>
+		<div className="absolute" style={{ left: '510px', top: '455px' }}>
 		  <NitrogenStraightPipe
 		    orientation="horizontal"
 		    hasFlow={true}
@@ -323,7 +323,7 @@ const SchemaImpianto = () => {
 		</div>
 
 		{/* Tubo verticale cx */}
-		<div className="absolute" style={{ left: '324px', top: '320px' }}>
+		<div className="absolute" style={{ left: '394px', top: '320px' }}>
 		  <NitrogenStraightPipe
 		    orientation="vertical"
 		    hasFlow={true}
