@@ -77,7 +77,7 @@ const SchemaImpianto = () => {
             isOpen={valvePV2Open}
             label="PV2"
             orientation="vertical"
-            manualControlEnabled={true}
+            manualControlEnabled={false}
             onToggle={() => setValvePV2Open(!valvePV2Open)}
           />
         </div>
@@ -106,7 +106,8 @@ const SchemaImpianto = () => {
             isOpen={valvePV1Open}
             label="PV1"
             orientation="horizontal"
-            manualControlEnabled={true}
+		    flowDirection="left"
+            manualControlEnabled={false}
             onToggle={() => setValvePV1Open(!valvePV1Open)}
           />
         </div>
@@ -117,7 +118,7 @@ const SchemaImpianto = () => {
 				value={valvePR2Value}
 				label="PR2"
 				orientation="horizontal"
-				manualControlEnabled={true}
+				manualControlEnabled={false}
 				onChange={setValvePR2Value}
 			/>
 		</div>
@@ -128,7 +129,8 @@ const SchemaImpianto = () => {
 		    isOpen={valvePV4Open}
 		    label="PV4"
 		    orientation="vertical"
-		    manualControlEnabled={true}
+		    flowDirection="down"
+		    manualControlEnabled={false}
 		    onToggle={() => setValvePV4Open(!valvePV4Open)}
 		  />
 		</div>
@@ -139,7 +141,7 @@ const SchemaImpianto = () => {
 				value={valvePR1Value}
 				label="PR1"
 				orientation="vertical"
-				manualControlEnabled={true}
+				manualControlEnabled={false}
 				onChange={setValvePR1Value}
 			/>
 		</div>
@@ -150,7 +152,8 @@ const SchemaImpianto = () => {
 		    isOpen={valvePV5Open}
 		    label="PV5"
 		    orientation="horizontal"
-		    manualControlEnabled={true}
+		    flowDirection="leftt"
+		    manualControlEnabled={false}
 		    onToggle={() => setValvePV5Open(!valvePV5Open)}
 		  />
 		</div>
@@ -161,7 +164,8 @@ const SchemaImpianto = () => {
 		    isOpen={valvePV6Open}
 		    label="PV6"
 		    orientation="horizontal"
-		    manualControlEnabled={true}
+		    flowDirection="right"
+		    manualControlEnabled={false}
 		    onToggle={() => setValvePV6Open(!valvePV6Open)}
 		  />
 		</div>

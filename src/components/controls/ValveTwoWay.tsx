@@ -6,19 +6,19 @@ const VALVE_CONFIG = {
   width: 60,
   height: 30,
   
-  // Colori con gradiente 3D
+  // Colori con gradiente 3D - versione brillante
   colors: {
     on: {
-      primary: "#0EA5E9",    // blu intenso
-      secondary: "#0284C7",  // blu scuro
-      highlight: "#7DD3FC",  // blu chiaro per highlight
-      shadow: "#0C4A6E"      // blu molto scuro per ombra
+      primary: "#00BFFF",    // blu elettrico brillante
+      secondary: "#0080FF",  // blu intenso
+      highlight: "#80DFFF",  // blu molto chiaro e brillante
+      shadow: "#003D7A"      // blu navy profondo
     },
     off: {
-      primary: "#F59E0B",    // arancione/giallo intenso
-      secondary: "#D97706",  // arancione scuro
-      highlight: "#FCD34D",  // giallo chiaro per highlight
-      shadow: "#92400E"      // marrone scuro per ombra
+      primary: "#FF6600",    // arancione brillante
+      secondary: "#FF4500",  // rosso-arancione intenso
+      highlight: "#FFB366",  // arancione chiaro brillante
+      shadow: "#CC3300"      // rosso scuro
     },
     border: "#1F2937",       // grigio molto scuro
     text: "#1F2937",
@@ -39,6 +39,8 @@ const VALVE_CONFIG = {
   }
 };
 
+type FlowDirection = 'left' | 'right' | 'up' | 'down';
+
 interface Valve2WayProps {
   // Stato della valvola
   isOpen: boolean;
@@ -46,6 +48,7 @@ interface Valve2WayProps {
   // Configurazione
   label?: string;
   orientation?: 'horizontal' | 'vertical';
+  flowDirection?: FlowDirection; // Nuova prop per direzione flusso
   
   // Controlli
   manualControlEnabled?: boolean;
@@ -61,6 +64,7 @@ const Valve2Way: React.FC<Valve2WayProps> = ({
   isOpen,
   label = "V001",
   orientation = 'horizontal',
+  flowDirection = 'right', // Default: destra per orizzontale, giù per verticale
   manualControlEnabled = false,
   onToggle,
   width: customWidth,
@@ -95,6 +99,48 @@ const Valve2Way: React.FC<Valve2WayProps> = ({
   const valveWidth = isVertical ? height : width;
   const valveHeight = isVertical ? width : height;
 
+  // Funzione per generare i punti della freccia in base alla direzione
+  const getArrowPoints = (direction: FlowDirection) => {
+    const arrowSize = 8;
+    
+    switch (direction) {
+      case 'right':
+        return {
+          main: `${centerX-10},${centerY-arrowSize} ${centerX-10},${centerY+arrowSize} ${centerX+10},${centerY}`,
+          inner: `${centerX-8},${centerY-6} ${centerX-8},${centerY+6} ${centerX+8},${centerY}`
+        };
+      case 'left':
+        return {
+          main: `${centerX+10},${centerY-arrowSize} ${centerX+10},${centerY+arrowSize} ${centerX-10},${centerY}`,
+          inner: `${centerX+8},${centerY-6} ${centerX+8},${centerY+6} ${centerX-8},${centerY}`
+        };
+      case 'down':
+        return {
+          main: `${centerX-arrowSize},${centerY-10} ${centerX+arrowSize},${centerY-10} ${centerX},${centerY+10}`,
+          inner: `${centerX-6},${centerY-8} ${centerX+6},${centerY-8} ${centerX},${centerY+8}`
+        };
+      case 'up':
+        return {
+          main: `${centerX-arrowSize},${centerY+10} ${centerX+arrowSize},${centerY+10} ${centerX},${centerY-10}`,
+          inner: `${centerX-6},${centerY+8} ${centerX+6},${centerY+8} ${centerX},${centerY-8}`
+        };
+      default:
+        return getArrowPoints('right');
+    }
+  };
+
+  // Determina la direzione effettiva del flusso
+  const getEffectiveFlowDirection = (): FlowDirection => {
+    // Se è specificata una direzione, usala
+    if (flowDirection) return flowDirection;
+    
+    // Altrimenti usa default basati sull'orientamento
+    return isVertical ? 'down' : 'right';
+  };
+
+  const effectiveDirection = getEffectiveFlowDirection();
+  const arrowPoints = getArrowPoints(effectiveDirection);
+
   return (
     <div className={`inline-block ${className}`}>
       <svg 
@@ -113,18 +159,17 @@ const Valve2Way: React.FC<Valve2WayProps> = ({
             <stop offset="100%" stopColor={currentColors.shadow} />
           </linearGradient>
           
-          {/* Gradiente OFF (Arancione) */}
+          {/* Gradiente OFF (Arancione brillante) */}
           <linearGradient id={`gradient-off-${label}`} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor={VALVE_CONFIG.colors.off.highlight} />
-            <stop offset="30%" stopColor={VALVE_CONFIG.colors.off.primary} />
-            <stop offset="70%" stopColor={VALVE_CONFIG.colors.off.secondary} />
-            <stop offset="100%" stopColor={VALVE_CONFIG.colors.off.shadow} />
+            <stop offset="0%" stopColor="#FFB366" />
+            <stop offset="30%" stopColor="#FF6600" />
+            <stop offset="70%" stopColor="#FF4500" />
+            <stop offset="100%" stopColor="#CC3300" />
           </linearGradient>
 
-          {/* Gradiente per highlight superiore */}
+          {/* Gradiente per highlight superiore - più sottile */}
           <linearGradient id={`highlight-${label}`} x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="white" stopOpacity="0.6" />
-            <stop offset="50%" stopColor="white" stopOpacity="0.2" />
+            <stop offset="0%" stopColor="white" stopOpacity="0.4" />
             <stop offset="100%" stopColor="white" stopOpacity="0" />
           </linearGradient>
 
@@ -142,87 +187,6 @@ const Valve2Way: React.FC<Valve2WayProps> = ({
           </filter>
         </defs>
 
-        {/* Linee di connessione con effetto metallico */}
-        {isVertical ? (
-          <>
-            {/* Connessione superiore */}
-            <line
-              x1={centerX}
-              y1={10}
-              x2={centerX}
-              y2={centerY - valveHeight/2}
-              stroke={VALVE_CONFIG.colors.connection}
-              strokeWidth={VALVE_CONFIG.strokeWidth + 1}
-            />
-            <line
-              x1={centerX-1}
-              y1={10}
-              x2={centerX-1}
-              y2={centerY - valveHeight/2}
-              stroke="white"
-              strokeWidth={1}
-              opacity={0.4}
-            />
-            {/* Connessione inferiore */}
-            <line
-              x1={centerX}
-              y1={centerY + valveHeight/2}
-              x2={centerX}
-              y2={svgHeight - 10}
-              stroke={VALVE_CONFIG.colors.connection}
-              strokeWidth={VALVE_CONFIG.strokeWidth + 1}
-            />
-            <line
-              x1={centerX-1}
-              y1={centerY + valveHeight/2}
-              x2={centerX-1}
-              y2={svgHeight - 10}
-              stroke="white"
-              strokeWidth={1}
-              opacity={0.4}
-            />
-          </>
-        ) : (
-          <>
-            {/* Connessione sinistra */}
-            <line
-              x1={10}
-              y1={centerY}
-              x2={centerX - valveWidth/2}
-              y2={centerY}
-              stroke={VALVE_CONFIG.colors.connection}
-              strokeWidth={VALVE_CONFIG.strokeWidth + 1}
-            />
-            <line
-              x1={10}
-              y1={centerY-1}
-              x2={centerX - valveWidth/2}
-              y2={centerY-1}
-              stroke="white"
-              strokeWidth={1}
-              opacity={0.4}
-            />
-            {/* Connessione destra */}
-            <line
-              x1={centerX + valveWidth/2}
-              y1={centerY}
-              x2={svgWidth - 10}
-              y2={centerY}
-              stroke={VALVE_CONFIG.colors.connection}
-              strokeWidth={VALVE_CONFIG.strokeWidth + 1}
-            />
-            <line
-              x1={centerX + valveWidth/2}
-              y1={centerY-1}
-              x2={svgWidth - 10}
-              y2={centerY-1}
-              stroke="white"
-              strokeWidth={1}
-              opacity={0.4}
-            />
-          </>
-        )}
-        
         {/* Ombra del corpo valvola */}
         <rect
           x={centerX - valveWidth/2 + VALVE_CONFIG.shadowOffset}
@@ -249,53 +213,34 @@ const Valve2Way: React.FC<Valve2WayProps> = ({
           filter={`url(#shadow-${label})`}
         />
 
-        {/* Highlight superiore per effetto 3D */}
+        {/* Highlight superiore per effetto 3D - ridotto */}
         <rect
           x={centerX - valveWidth/2 + 2}
           y={centerY - valveHeight/2 + 2}
           width={valveWidth - 4}
-          height={valveHeight/2}
+          height={valveHeight/3}
           fill={`url(#highlight-${label})`}
           rx={VALVE_CONFIG.borderRadius - 1}
           ry={VALVE_CONFIG.borderRadius - 1}
         />
         
-        {/* Indicatore di flusso (freccia) - solo quando aperta con effetto 3D */}
+        {/* Indicatore di flusso (freccia) - solo quando aperta con direzione controllabile */}
         {isOpen && (
           <g>
-            {isVertical ? (
-              // Freccia verticale con gradiente
-              <>
-                <polygon
-                  points={`${centerX-8},${centerY-10} ${centerX+8},${centerY-10} ${centerX},${centerY+10}`}
-                  fill="white"
-                  stroke={VALVE_CONFIG.colors.border}
-                  strokeWidth={1.5}
-                  opacity={0.9}
-                />
-                <polygon
-                  points={`${centerX-6},${centerY-8} ${centerX+6},${centerY-8} ${centerX},${centerY+8}`}
-                  fill={currentColors.highlight}
-                  opacity={0.8}
-                />
-              </>
-            ) : (
-              // Freccia orizzontale con gradiente
-              <>
-                <polygon
-                  points={`${centerX-10},${centerY-8} ${centerX-10},${centerY+8} ${centerX+10},${centerY}`}
-                  fill="white"
-                  stroke={VALVE_CONFIG.colors.border}
-                  strokeWidth={1.5}
-                  opacity={0.9}
-                />
-                <polygon
-                  points={`${centerX-8},${centerY-6} ${centerX-8},${centerY+6} ${centerX+8},${centerY}`}
-                  fill={currentColors.highlight}
-                  opacity={0.8}
-                />
-              </>
-            )}
+            {/* Freccia principale */}
+            <polygon
+              points={arrowPoints.main}
+              fill="white"
+              stroke={VALVE_CONFIG.colors.border}
+              strokeWidth={1.5}
+              opacity={0.9}
+            />
+            {/* Freccia interna per effetto gradiente */}
+            <polygon
+              points={arrowPoints.inner}
+              fill={currentColors.highlight}
+              opacity={0.8}
+            />
           </g>
         )}
         
@@ -329,35 +274,6 @@ const Valve2Way: React.FC<Valve2WayProps> = ({
             </text>
           </g>
         )}
-        
-        {/* Indicatore di stato 3D (pallino) */}
-        <g>
-          {/* Ombra dell'indicatore */}
-          <circle
-            cx={centerX + valveWidth/2 - 6}
-            cy={centerY - valveHeight/2 + 10}
-            r={5}
-            fill={currentColors.shadow}
-            opacity={0.4}
-          />
-          {/* Indicatore principale */}
-          <circle
-            cx={centerX + valveWidth/2 - 8}
-            cy={centerY - valveHeight/2 + 8}
-            r={5}
-            fill={`url(#gradient-${isOpen ? 'on' : 'off'}-${label})`}
-            stroke={VALVE_CONFIG.colors.border}
-            strokeWidth={1.5}
-          />
-          {/* Highlight dell'indicatore */}
-          <circle
-            cx={centerX + valveWidth/2 - 9}
-            cy={centerY - valveHeight/2 + 7}
-            r={2}
-            fill="white"
-            opacity={0.6}
-          />
-        </g>
         
         {/* Etichetta della valvola con ombra */}
         {VALVE_CONFIG.showLabel && (

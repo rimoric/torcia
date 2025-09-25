@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 // Configurazione valvola (facilmente modificabile)
 const VALVE_CONFIG = {
@@ -6,19 +6,19 @@ const VALVE_CONFIG = {
   width: 60,
   height: 30,
   
-  // Colori con gradiente 3D
+  // Colori con gradiente 3D - versione brillante
   colors: {
     on: {
-      primary: "#0EA5E9",    // blu intenso
-      secondary: "#0284C7",  // blu scuro
-      highlight: "#7DD3FC",  // blu chiaro per highlight
-      shadow: "#0C4A6E"      // blu molto scuro per ombra
+      primary: "#00BFFF",    // blu elettrico brillante
+      secondary: "#0080FF",  // blu intenso
+      highlight: "#80DFFF",  // blu molto chiaro e brillante
+      shadow: "#003D7A"      // blu navy profondo
     },
     off: {
-      primary: "#F59E0B",    // arancione/giallo intenso
-      secondary: "#D97706",  // arancione scuro
-      highlight: "#FCD34D",  // giallo chiaro per highlight
-      shadow: "#92400E"      // marrone scuro per ombra
+      primary: "#FF6600",    // arancione brillante
+      secondary: "#FF4500",  // rosso-arancione intenso
+      highlight: "#FFB366",  // arancione chiaro brillante
+      shadow: "#CC3300"      // rosso scuro
     },
     border: "#1F2937",       // grigio molto scuro
     text: "#1F2937",
@@ -39,6 +39,8 @@ const VALVE_CONFIG = {
   }
 };
 
+type FlowDirection = 'left' | 'right' | 'up' | 'down';
+
 interface Valve2WayProps {
   // Stato della valvola
   isOpen: boolean;
@@ -46,6 +48,7 @@ interface Valve2WayProps {
   // Configurazione
   label?: string;
   orientation?: 'horizontal' | 'vertical';
+  flowDirection?: FlowDirection; // Nuova prop per direzione flusso
   
   // Controlli
   manualControlEnabled?: boolean;
@@ -61,6 +64,7 @@ const Valve2Way: React.FC<Valve2WayProps> = ({
   isOpen,
   label = "V001",
   orientation = 'horizontal',
+  flowDirection = 'right', // Default: destra per orizzontale, giù per verticale
   manualControlEnabled = false,
   onToggle,
   width: customWidth,
@@ -95,6 +99,48 @@ const Valve2Way: React.FC<Valve2WayProps> = ({
   const valveWidth = isVertical ? height : width;
   const valveHeight = isVertical ? width : height;
 
+  // Funzione per generare i punti della freccia in base alla direzione
+  const getArrowPoints = (direction: FlowDirection) => {
+    const arrowSize = 8;
+    
+    switch (direction) {
+      case 'right':
+        return {
+          main: `${centerX-10},${centerY-arrowSize} ${centerX-10},${centerY+arrowSize} ${centerX+10},${centerY}`,
+          inner: `${centerX-8},${centerY-6} ${centerX-8},${centerY+6} ${centerX+8},${centerY}`
+        };
+      case 'left':
+        return {
+          main: `${centerX+10},${centerY-arrowSize} ${centerX+10},${centerY+arrowSize} ${centerX-10},${centerY}`,
+          inner: `${centerX+8},${centerY-6} ${centerX+8},${centerY+6} ${centerX-8},${centerY}`
+        };
+      case 'down':
+        return {
+          main: `${centerX-arrowSize},${centerY-10} ${centerX+arrowSize},${centerY-10} ${centerX},${centerY+10}`,
+          inner: `${centerX-6},${centerY-8} ${centerX+6},${centerY-8} ${centerX},${centerY+8}`
+        };
+      case 'up':
+        return {
+          main: `${centerX-arrowSize},${centerY+10} ${centerX+arrowSize},${centerY+10} ${centerX},${centerY-10}`,
+          inner: `${centerX-6},${centerY+8} ${centerX+6},${centerY+8} ${centerX},${centerY-8}`
+        };
+      default:
+        return getArrowPoints('right');
+    }
+  };
+
+  // Determina la direzione effettiva del flusso
+  const getEffectiveFlowDirection = (): FlowDirection => {
+    // Se è specificata una direzione, usala
+    if (flowDirection) return flowDirection;
+    
+    // Altrimenti usa default basati sull'orientamento
+    return isVertical ? 'down' : 'right';
+  };
+
+  const effectiveDirection = getEffectiveFlowDirection();
+  const arrowPoints = getArrowPoints(effectiveDirection);
+
   return (
     <div className={`inline-block ${className}`}>
       <svg 
@@ -113,18 +159,17 @@ const Valve2Way: React.FC<Valve2WayProps> = ({
             <stop offset="100%" stopColor={currentColors.shadow} />
           </linearGradient>
           
-          {/* Gradiente OFF (Arancione) */}
+          {/* Gradiente OFF (Arancione brillante) */}
           <linearGradient id={`gradient-off-${label}`} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor={VALVE_CONFIG.colors.off.highlight} />
-            <stop offset="30%" stopColor={VALVE_CONFIG.colors.off.primary} />
-            <stop offset="70%" stopColor={VALVE_CONFIG.colors.off.secondary} />
-            <stop offset="100%" stopColor={VALVE_CONFIG.colors.off.shadow} />
+            <stop offset="0%" stopColor="#FFB366" />
+            <stop offset="30%" stopColor="#FF6600" />
+            <stop offset="70%" stopColor="#FF4500" />
+            <stop offset="100%" stopColor="#CC3300" />
           </linearGradient>
 
-          {/* Gradiente per highlight superiore */}
+          {/* Gradiente per highlight superiore - più sottile */}
           <linearGradient id={`highlight-${label}`} x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="white" stopOpacity="0.6" />
-            <stop offset="50%" stopColor="white" stopOpacity="0.2" />
+            <stop offset="0%" stopColor="white" stopOpacity="0.4" />
             <stop offset="100%" stopColor="white" stopOpacity="0" />
           </linearGradient>
 
@@ -142,87 +187,6 @@ const Valve2Way: React.FC<Valve2WayProps> = ({
           </filter>
         </defs>
 
-        {/* Linee di connessione con effetto metallico */}
-        {isVertical ? (
-          <>
-            {/* Connessione superiore */}
-            <line
-              x1={centerX}
-              y1={10}
-              x2={centerX}
-              y2={centerY - valveHeight/2}
-              stroke={VALVE_CONFIG.colors.connection}
-              strokeWidth={VALVE_CONFIG.strokeWidth + 1}
-            />
-            <line
-              x1={centerX-1}
-              y1={10}
-              x2={centerX-1}
-              y2={centerY - valveHeight/2}
-              stroke="white"
-              strokeWidth={1}
-              opacity={0.4}
-            />
-            {/* Connessione inferiore */}
-            <line
-              x1={centerX}
-              y1={centerY + valveHeight/2}
-              x2={centerX}
-              y2={svgHeight - 10}
-              stroke={VALVE_CONFIG.colors.connection}
-              strokeWidth={VALVE_CONFIG.strokeWidth + 1}
-            />
-            <line
-              x1={centerX-1}
-              y1={centerY + valveHeight/2}
-              x2={centerX-1}
-              y2={svgHeight - 10}
-              stroke="white"
-              strokeWidth={1}
-              opacity={0.4}
-            />
-          </>
-        ) : (
-          <>
-            {/* Connessione sinistra */}
-            <line
-              x1={10}
-              y1={centerY}
-              x2={centerX - valveWidth/2}
-              y2={centerY}
-              stroke={VALVE_CONFIG.colors.connection}
-              strokeWidth={VALVE_CONFIG.strokeWidth + 1}
-            />
-            <line
-              x1={10}
-              y1={centerY-1}
-              x2={centerX - valveWidth/2}
-              y2={centerY-1}
-              stroke="white"
-              strokeWidth={1}
-              opacity={0.4}
-            />
-            {/* Connessione destra */}
-            <line
-              x1={centerX + valveWidth/2}
-              y1={centerY}
-              x2={svgWidth - 10}
-              y2={centerY}
-              stroke={VALVE_CONFIG.colors.connection}
-              strokeWidth={VALVE_CONFIG.strokeWidth + 1}
-            />
-            <line
-              x1={centerX + valveWidth/2}
-              y1={centerY-1}
-              x2={svgWidth - 10}
-              y2={centerY-1}
-              stroke="white"
-              strokeWidth={1}
-              opacity={0.4}
-            />
-          </>
-        )}
-        
         {/* Ombra del corpo valvola */}
         <rect
           x={centerX - valveWidth/2 + VALVE_CONFIG.shadowOffset}
@@ -249,53 +213,34 @@ const Valve2Way: React.FC<Valve2WayProps> = ({
           filter={`url(#shadow-${label})`}
         />
 
-        {/* Highlight superiore per effetto 3D */}
+        {/* Highlight superiore per effetto 3D - ridotto */}
         <rect
           x={centerX - valveWidth/2 + 2}
           y={centerY - valveHeight/2 + 2}
           width={valveWidth - 4}
-          height={valveHeight/2}
+          height={valveHeight/3}
           fill={`url(#highlight-${label})`}
           rx={VALVE_CONFIG.borderRadius - 1}
           ry={VALVE_CONFIG.borderRadius - 1}
         />
         
-        {/* Indicatore di flusso (freccia) - solo quando aperta con effetto 3D */}
+        {/* Indicatore di flusso (freccia) - solo quando aperta con direzione controllabile */}
         {isOpen && (
           <g>
-            {isVertical ? (
-              // Freccia verticale con gradiente
-              <>
-                <polygon
-                  points={`${centerX-8},${centerY-10} ${centerX+8},${centerY-10} ${centerX},${centerY+10}`}
-                  fill="white"
-                  stroke={VALVE_CONFIG.colors.border}
-                  strokeWidth={1.5}
-                  opacity={0.9}
-                />
-                <polygon
-                  points={`${centerX-6},${centerY-8} ${centerX+6},${centerY-8} ${centerX},${centerY+8}`}
-                  fill={currentColors.highlight}
-                  opacity={0.8}
-                />
-              </>
-            ) : (
-              // Freccia orizzontale con gradiente
-              <>
-                <polygon
-                  points={`${centerX-10},${centerY-8} ${centerX-10},${centerY+8} ${centerX+10},${centerY}`}
-                  fill="white"
-                  stroke={VALVE_CONFIG.colors.border}
-                  strokeWidth={1.5}
-                  opacity={0.9}
-                />
-                <polygon
-                  points={`${centerX-8},${centerY-6} ${centerX-8},${centerY+6} ${centerX+8},${centerY}`}
-                  fill={currentColors.highlight}
-                  opacity={0.8}
-                />
-              </>
-            )}
+            {/* Freccia principale */}
+            <polygon
+              points={arrowPoints.main}
+              fill="white"
+              stroke={VALVE_CONFIG.colors.border}
+              strokeWidth={1.5}
+              opacity={0.9}
+            />
+            {/* Freccia interna per effetto gradiente */}
+            <polygon
+              points={arrowPoints.inner}
+              fill={currentColors.highlight}
+              opacity={0.8}
+            />
           </g>
         )}
         
@@ -329,35 +274,6 @@ const Valve2Way: React.FC<Valve2WayProps> = ({
             </text>
           </g>
         )}
-        
-        {/* Indicatore di stato 3D (pallino) */}
-        <g>
-          {/* Ombra dell'indicatore */}
-          <circle
-            cx={centerX + valveWidth/2 - 6}
-            cy={centerY - valveHeight/2 + 10}
-            r={5}
-            fill={currentColors.shadow}
-            opacity={0.4}
-          />
-          {/* Indicatore principale */}
-          <circle
-            cx={centerX + valveWidth/2 - 8}
-            cy={centerY - valveHeight/2 + 8}
-            r={5}
-            fill={`url(#gradient-${isOpen ? 'on' : 'off'}-${label})`}
-            stroke={VALVE_CONFIG.colors.border}
-            strokeWidth={1.5}
-          />
-          {/* Highlight dell'indicatore */}
-          <circle
-            cx={centerX + valveWidth/2 - 9}
-            cy={centerY - valveHeight/2 + 7}
-            r={2}
-            fill="white"
-            opacity={0.6}
-          />
-        </g>
         
         {/* Etichetta della valvola con ombra */}
         {VALVE_CONFIG.showLabel && (
@@ -420,193 +336,123 @@ const Valve2Way: React.FC<Valve2WayProps> = ({
   );
 };
 
-// Componente Demo per mostrare entrambe le orientazioni
-const Valve2WayDemo: React.FC = () => {
-  const [valve1Open, setValve1Open] = useState(false);
-  const [valve2Open, setValve2Open] = useState(true);
-  const [valve3Open, setValve3Open] = useState(false);
-  const [valve4Open, setValve4Open] = useState(true);
-  const [manualControlEnabled, setManualControlEnabled] = useState(false);
+// Componente demo per testare le direzioni
+const Valve2WayDemo = () => {
+  const [isOpen, setIsOpen] = React.useState(false);
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-8 bg-gray-100 min-h-screen">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">
-          Controlli Valvola 2 Vie - Dashboard Industriale
-        </h1>
+        <h1 className="text-2xl font-bold mb-6 text-center">Valvola 2 Vie con Controllo Direzione Flusso</h1>
         
-        {/* Pannello controlli */}
-        <div className="bg-white rounded-lg shadow-md p-4 mb-6">
-          <h2 className="text-lg font-semibold mb-4">Controlli Globali</h2>
-          <div className="flex items-center gap-4">
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={manualControlEnabled}
-                onChange={(e) => setManualControlEnabled(e.target.checked)}
-                className="rounded"
-              />
-              <span className="text-sm font-medium">Abilita Comandi Manuali</span>
-            </label>
-            {manualControlEnabled && (
-              <span className="text-xs text-green-600 font-medium">
-                ● Controllo manuale attivo - cliccare sulle valvole per cambiarle
-              </span>
-            )}
-          </div>
+        {/* Controllo globale */}
+        <div className="mb-8 text-center">
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className={`px-6 py-2 text-white rounded font-semibold ${
+              isOpen ? 'bg-cyan-500 hover:bg-cyan-600' : 'bg-orange-500 hover:bg-orange-600'
+            }`}
+          >
+            {isOpen ? 'CHIUDI TUTTE' : 'APRI TUTTE'}
+          </button>
         </div>
 
-        {/* Griglia delle valvole */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          
-          {/* Valvola Orizzontale - OFF */}
-          <div className="bg-white rounded-lg shadow-md p-4">
-            <h3 className="text-sm font-semibold mb-3 text-center text-gray-700">
-              Valvola Orizzontale - OFF
-            </h3>
-            <div className="flex justify-center">
+        {/* Valvole orizzontali */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-4">Valvole Orizzontali</h2>
+          <div className="grid grid-cols-2 gap-8">
+            <div className="text-center">
+              <h3 className="text-lg mb-4">Flusso verso Destra →</h3>
               <Valve2Way
-                isOpen={valve1Open}
-                label="PV001"
+                isOpen={isOpen}
+                label="V001"
                 orientation="horizontal"
-                manualControlEnabled={manualControlEnabled}
-                onToggle={() => setValve1Open(!valve1Open)}
+                flowDirection="right"
+                manualControlEnabled={true}
+                onToggle={() => setIsOpen(!isOpen)}
               />
             </div>
-            <div className="mt-3 text-xs text-center text-gray-600">
-              Stato: <span className="font-semibold text-yellow-600">CHIUSA</span>
-            </div>
-          </div>
-
-          {/* Valvola Orizzontale - ON */}
-          <div className="bg-white rounded-lg shadow-md p-4">
-            <h3 className="text-sm font-semibold mb-3 text-center text-gray-700">
-              Valvola Orizzontale - ON
-            </h3>
-            <div className="flex justify-center">
-              <Valve2Way
-                isOpen={valve2Open}
-                label="PV002"
-                orientation="horizontal"
-                manualControlEnabled={manualControlEnabled}
-                onToggle={() => setValve2Open(!valve2Open)}
-              />
-            </div>
-            <div className="mt-3 text-xs text-center text-gray-600">
-              Stato: <span className="font-semibold text-blue-500">APERTA</span>
-            </div>
-          </div>
-
-          {/* Valvola Verticale - OFF */}
-          <div className="bg-white rounded-lg shadow-md p-4">
-            <h3 className="text-sm font-semibold mb-3 text-center text-gray-700">
-              Valvola Verticale - OFF
-            </h3>
-            <div className="flex justify-center">
-              <Valve2Way
-                isOpen={valve3Open}
-                label="PV003"
-                orientation="vertical"
-                manualControlEnabled={manualControlEnabled}
-                onToggle={() => setValve3Open(!valve3Open)}
-              />
-            </div>
-            <div className="mt-3 text-xs text-center text-gray-600">
-              Stato: <span className="font-semibold text-yellow-600">CHIUSA</span>
-            </div>
-          </div>
-
-          {/* Valvola Verticale - ON */}
-          <div className="bg-white rounded-lg shadow-md p-4">
-            <h3 className="text-sm font-semibold mb-3 text-center text-gray-700">
-              Valvola Verticale - ON
-            </h3>
-            <div className="flex justify-center">
-              <Valve2Way
-                isOpen={valve4Open}
-                label="PV004"
-                orientation="vertical"
-                manualControlEnabled={manualControlEnabled}
-                onToggle={() => setValve4Open(!valve4Open)}
-              />
-            </div>
-            <div className="mt-3 text-xs text-center text-gray-600">
-              Stato: <span className="font-semibold text-blue-500">APERTA</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Esempio di integrazione con dimensioni personalizzate */}
-        <div className="mt-8 bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-lg font-semibold mb-4">Esempio con Dimensioni Personalizzate</h2>
-          <div className="flex flex-wrap gap-8 items-center justify-center">
             
-            {/* Valvola piccola */}
             <div className="text-center">
+              <h3 className="text-lg mb-4">Flusso verso Sinistra ←</h3>
               <Valve2Way
-                isOpen={true}
-                label="Small"
+                isOpen={isOpen}
+                label="V002"
                 orientation="horizontal"
-                width={40}
-                height={20}
-                manualControlEnabled={manualControlEnabled}
-                onToggle={() => {}}
+                flowDirection="left"
+                manualControlEnabled={true}
+                onToggle={() => setIsOpen(!isOpen)}
               />
-              <p className="text-xs text-gray-600 mt-2">Piccola (40x20)</p>
-            </div>
-
-            {/* Valvola media (default) */}
-            <div className="text-center">
-              <Valve2Way
-                isOpen={false}
-                label="Medium"
-                orientation="horizontal"
-                manualControlEnabled={manualControlEnabled}
-                onToggle={() => {}}
-              />
-              <p className="text-xs text-gray-600 mt-2">Media (60x30)</p>
-            </div>
-
-            {/* Valvola grande */}
-            <div className="text-center">
-              <Valve2Way
-                isOpen={true}
-                label="Large"
-                orientation="vertical"
-                width={80}
-                height={40}
-                manualControlEnabled={manualControlEnabled}
-                onToggle={() => {}}
-              />
-              <p className="text-xs text-gray-600 mt-2">Grande (80x40)</p>
             </div>
           </div>
         </div>
 
-        {/* Informazioni tecniche */}
-        <div className="mt-8 bg-blue-50 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-blue-800 mb-3">Caratteristiche Tecniche</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div>
-              <h4 className="font-semibold text-blue-700">Stati Visuali:</h4>
-              <ul className="list-disc list-inside text-blue-700 space-y-1">
-                <li><span className="inline-block w-3 h-3 bg-sky-300 rounded mr-2"></span>ON - Blu chiaro (#87CEEB)</li>
-                <li><span className="inline-block w-3 h-3 bg-yellow-400 rounded mr-2"></span>OFF - Giallo (#FFD700)</li>
-                <li>Freccia direzionale quando aperta</li>
-                <li>Indicatore di stato (pallino colorato)</li>
-              </ul>
+        {/* Valvole verticali */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-4">Valvole Verticali</h2>
+          <div className="grid grid-cols-2 gap-8">
+            <div className="text-center">
+              <h3 className="text-lg mb-4">Flusso verso il Basso ↓</h3>
+              <Valve2Way
+                isOpen={isOpen}
+                label="V003"
+                orientation="vertical"
+                flowDirection="down"
+                manualControlEnabled={true}
+                onToggle={() => setIsOpen(!isOpen)}
+              />
             </div>
-            <div>
-              <h4 className="font-semibold text-blue-700">Configurabilità:</h4>
-              <ul className="list-disc list-inside text-blue-700 space-y-1">
-                <li>Orientamento orizzontale/verticale</li>
-                <li>Dimensioni personalizzabili</li>
-                <li>Etichette modificabili</li>
-                <li>Controllo manuale opzionale</li>
-                <li>Colori configurabili nel codice</li>
-              </ul>
+            
+            <div className="text-center">
+              <h3 className="text-lg mb-4">Flusso verso l'Alto ↑</h3>
+              <Valve2Way
+                isOpen={isOpen}
+                label="V004"
+                orientation="vertical"
+                flowDirection="up"
+                manualControlEnabled={true}
+                onToggle={() => setIsOpen(!isOpen)}
+              />
             </div>
           </div>
+        </div>
+
+        {/* Combinazioni miste */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-4">Combinazioni Miste</h2>
+          <div className="grid grid-cols-2 gap-8">
+            <div className="text-center">
+              <h3 className="text-lg mb-4">Orizzontale - Flusso Su ↑</h3>
+              <Valve2Way
+                isOpen={isOpen}
+                label="V005"
+                orientation="horizontal"
+                flowDirection="up"
+                manualControlEnabled={true}
+                onToggle={() => setIsOpen(!isOpen)}
+              />
+            </div>
+            
+            <div className="text-center">
+              <h3 className="text-lg mb-4">Verticale - Flusso Destra →</h3>
+              <Valve2Way
+                isOpen={isOpen}
+                label="V006"
+                orientation="vertical"
+                flowDirection="right"
+                manualControlEnabled={true}
+                onToggle={() => setIsOpen(!isOpen)}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Info stato */}
+        <div className="mt-8 p-4 bg-white rounded-lg shadow">
+          <h3 className="text-lg font-semibold mb-2">Stato Valvole:</h3>
+          <p className={`font-semibold ${isOpen ? 'text-cyan-600' : 'text-orange-600'}`}>
+            {isOpen ? 'APERTE (ON)' : 'CHIUSE (OFF)'}
+          </p>
         </div>
       </div>
     </div>
