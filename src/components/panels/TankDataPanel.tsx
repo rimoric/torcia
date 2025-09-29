@@ -51,11 +51,10 @@ export default function TankDataPanel({
 
           {/* Capacità serbatoio */}
           <div>
-            <p className="text-blue-700 text-sm mb-3 font-medium">Capacità serbatoio [L]</p>
+            <p className="text-blue-700 text-sm mb-3 font-medium">Capacità serbatoio</p>
             <NumericInput
               value={volumeProdotto || 0}
               onChange={setVolumeProdotto}
-              label="Capacità serbatoio"
               unit="L"
               min={settingsLimits.volumeProdotto.min}
               max={settingsLimits.volumeProdotto.max}
