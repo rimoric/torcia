@@ -51,7 +51,7 @@ export default function TankDataPanel({
 
           {/* Capacità serbatoio */}
           <div>
-            <p className="text-blue-700 text-sm mb-3 font-medium">Capacità serbatoio</p>
+            <p className="text-blue-700 text-sm mb-3 font-medium">Capacità</p>
             <NumericInput
               value={volumeProdotto || 0}
               onChange={setVolumeProdotto}
@@ -65,7 +65,7 @@ export default function TankDataPanel({
           
           {/* Temperatura serbatoio */}
           <div>
-            <p className="text-blue-700 text-sm mb-3 font-medium">Temperatura serbatoio</p>
+            <p className="text-blue-700 text-sm mb-3 font-medium">Temperatura</p>
             <NumericInput
               value={temperatura || 0}
               onChange={setTemperatura}
@@ -79,7 +79,7 @@ export default function TankDataPanel({
           
           {/* Percentuale riempimento */}
           <div>
-            <p className="text-blue-700 text-sm mb-3 font-medium">Percentuale riempimento serbatoio</p>
+            <p className="text-blue-700 text-sm mb-3 font-medium">Percentuale riempimento</p>
             <NumericInput
               value={riempPerc || 0}
               onChange={setRiempPerc}
