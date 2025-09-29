@@ -138,7 +138,7 @@ const SchemaImpianto = () => {
 		</div>
 
 		{/* Valvola Modulante PR1 - verticale con flusso verso il basso */}
-		<div className="absolute" style={{ left: '353px', top: '220px' }}>
+		<div className="absolute" style={{ left: '355px', top: '195px' }}>
 			<ValveModulating
 				value={valvePR1Value}
 				label="PR1"
@@ -335,12 +335,12 @@ const SchemaImpianto = () => {
 		</div>
 
 		{/* Tubo verticale cx */}
-		<div className="absolute" style={{ left: '394px', top: '320px' }}>
+		<div className="absolute" style={{ left: '396px', top: '295px' }}>
 		  <NitrogenStraightPipe
 		    orientation="vertical"
 		    hasFlow={true}
 		    size={0.5}
-		    length={40}
+		    length={110}
 		  />
 		</div>
 
