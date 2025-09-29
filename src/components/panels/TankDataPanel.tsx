@@ -65,11 +65,10 @@ export default function TankDataPanel({
           
           {/* Temperatura serbatoio */}
           <div>
-            <p className="text-blue-700 text-sm mb-3 font-medium">Temperatura serbatoio [°C]</p>
+            <p className="text-blue-700 text-sm mb-3 font-medium">Temperatura serbatoio</p>
             <NumericInput
               value={temperatura || 0}
               onChange={setTemperatura}
-              label="Temperatura serbatoio"
               unit="°C"
               min={settingsLimits.temperatura.min}
               max={settingsLimits.temperatura.max}
@@ -80,11 +79,11 @@ export default function TankDataPanel({
           
           {/* Percentuale riempimento */}
           <div>
-            <p className="text-blue-700 text-sm mb-3 font-medium">Percentuale riempimento serbatoio [%]</p>
+            <p className="text-blue-700 text-sm mb-3 font-medium">Percentuale riempimento serbatoio</p>
             <NumericInput
               value={riempPerc || 0}
               onChange={setRiempPerc}
-              label="Riempimento serbatoio"
+              label=""
               unit="%"
               min={settingsLimits.riempPerc.min}
               max={settingsLimits.riempPerc.max}
