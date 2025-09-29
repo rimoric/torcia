@@ -73,7 +73,7 @@ const SchemaImpianto = () => {
         </div>
 
         {/* Valvola PV2 sopra il connettore T sinistra */}
-        <div className="absolute" style={{ left: '150px', top: '164px' }}>
+        <div className="absolute" style={{ left: '150px', top: '140px' }}>
           <ValveTwoWay
             isOpen={valvePV2Open}
             label="PV2"
@@ -84,8 +84,31 @@ const SchemaImpianto = () => {
           />
         </div>
 
+        {/* Valvola PV1 sull'uscita destra del connettore */}
+        <div className="absolute" style={{ left: '430px', top: '140px' }}>
+          <ValveTwoWay
+            isOpen={valvePV1Open}
+            label="PV1"
+            orientation="horizontal"
+		    flowDirection="left"
+            manualControlEnabled={false}
+            onToggle={() => setValvePV1Open(!valvePV1Open)}
+          />
+        </div>
+
+        {/* Valvola Modulante PR2 */}
+		<div className="absolute" style={{ left: '251px', top: '128px' }}>
+			<ValveModulating
+				value={valvePR2Value}
+				label="PR2"
+				orientation="horizontal"
+				manualControlEnabled={false}
+				onChange={setValvePR2Value}
+			/>
+		</div>
+
         {/* Connettore a T centrale */}
-        <div className="absolute" style={{ left: '335px', top: '135px' }}>
+        <div className="absolute" style={{ left: '337px', top: '110px' }}>
           <PipeTConnector
             x={0}
             y={0}
@@ -101,29 +124,6 @@ const SchemaImpianto = () => {
             pipeLength={100}
           />
         </div>
-
-        {/* Valvola PV1 sull'uscita destra del connettore */}
-        <div className="absolute" style={{ left: '430px', top: '164px' }}>
-          <ValveTwoWay
-            isOpen={valvePV1Open}
-            label="PV1"
-            orientation="horizontal"
-		    flowDirection="left"
-            manualControlEnabled={false}
-            onToggle={() => setValvePV1Open(!valvePV1Open)}
-          />
-        </div>
-
-        {/* Valvola Modulante PR2 */}
-		<div className="absolute" style={{ left: '251px', top: '154px' }}>
-			<ValveModulating
-				value={valvePR2Value}
-				label="PR2"
-				orientation="horizontal"
-				manualControlEnabled={false}
-				onChange={setValvePR2Value}
-			/>
-		</div>
 
 		{/* Valvola PV4 - verticale con flusso alto -> basso */}
 		<div className="absolute" style={{ left: '365px', top: '330px' }}>
@@ -219,12 +219,12 @@ const SchemaImpianto = () => {
 		</div>
 
 		{/* Serbatoio GPL TK1 */}
-		<div className="absolute" style={{ left: '20px', top: '355px' }}>
+		<div className="absolute" style={{ left: '20px', top: '450px' }}>
 		  <LPGTank
 		    temperature={tankTemperature}
 		    fillLevel={tankFillLevel}
 		    label="TK1"
-		    orientation="vertical"
+		    orientation="horizontal"
 		    size={0.6}
 		  />
 		</div>
@@ -244,8 +244,28 @@ const SchemaImpianto = () => {
 		  />
 		</div>
 
+		{/* Tubo verticale sx N" - PV2 */}
+		<div className="absolute" style={{ left: '60px', top: '110px' }}>
+		  <NitrogenStraightPipe
+		    orientation="vertical"
+		    hasFlow={true}
+		    size={0.5}
+		    length={90}
+		  />
+		</div>
+
+		{/* Tubo verticale dx NC1 - PV1 */}
+		<div className="absolute" style={{ left: '610px', top: '65px' }}>
+		  <NitrogenStraightPipe
+		    orientation="vertical"
+		    hasFlow={true}
+		    size={0.5}
+		    length={186}
+		  />
+		</div>
+
 		{/* Curva alto-sinistra sopra il sistema */}
-		<div className="absolute" style={{ left: '570px', top: '155px' }}>
+		<div className="absolute" style={{ left: '570px', top: '130px' }}>
 		  <NitrogenElbow
 		    direction="bottom-left"
 		    hasFlow={true}
@@ -254,7 +274,7 @@ const SchemaImpianto = () => {
 		</div>
 
 		{/* Curva alto-destra a destra del sistema */}
-		<div className="absolute" style={{ left: '60px', top: '155px' }}>
+		<div className="absolute" style={{ left: '60px', top: '130px' }}>
 		  <NitrogenElbow
 		    direction="bottom-right"
 		    hasFlow={true}
@@ -265,7 +285,7 @@ const SchemaImpianto = () => {
 		</div>
 
 		{/* Tubo orizzontale sx */}
-		<div className="absolute" style={{ left: '85px', top: '195px' }}>
+		<div className="absolute" style={{ left: '85px', top: '170px' }}>
 		  <NitrogenStraightPipe
 		    orientation="horizontal"
 		    hasFlow={true}
@@ -275,7 +295,7 @@ const SchemaImpianto = () => {
 		</div>
 
 		{/* Tubo orizzontale sx */}
-		<div className="absolute" style={{ left: '230px', top: '195px' }}>
+		<div className="absolute" style={{ left: '230px', top: '170px' }}>
 		  <NitrogenStraightPipe
 		    orientation="horizontal"
 		    hasFlow={true}
@@ -285,7 +305,7 @@ const SchemaImpianto = () => {
 		</div>
 
 		{/* Tubo orizzontale dx */}
-		<div className="absolute" style={{ left: '510px', top: '195px' }}>
+		<div className="absolute" style={{ left: '510px', top: '170px' }}>
 		  <NitrogenStraightPipe
 		    orientation="horizontal"
 		    hasFlow={true}
@@ -295,12 +315,12 @@ const SchemaImpianto = () => {
 		</div>
 
 		{/* Tubo orizzontale sx */}
-		<div className="absolute" style={{ left: '125px', top: '455px' }}>
+		<div className="absolute" style={{ left: '103px', top: '455px' }}>
 		  <NitrogenStraightPipe
 		    orientation="horizontal"
 		    hasFlow={true}
 		    size={0.5}
-		    length={327}
+		    length={370}
 		  />
 		</div>
 
@@ -311,26 +331,6 @@ const SchemaImpianto = () => {
 		    hasFlow={true}
 		    size={0.5}
 		    length={157}
-		  />
-		</div>
-
-		{/* Tubo verticale sx */}
-		<div className="absolute" style={{ left: '60px', top: '110px' }}>
-		  <NitrogenStraightPipe
-		    orientation="vertical"
-		    hasFlow={true}
-		    size={0.5}
-		    length={140}
-		  />
-		</div>
-
-		{/* Tubo verticale dx */}
-		<div className="absolute" style={{ left: '610px', top: '58px' }}>
-		  <NitrogenStraightPipe
-		    orientation="vertical"
-		    hasFlow={true}
-		    size={0.5}
-		    length={243}
 		  />
 		</div>
 
