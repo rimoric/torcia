@@ -13,6 +13,8 @@ interface TankDataPanelProps {
   setTemperatura: (value: number | "") => void;
   riempPerc: number | "";
   setRiempPerc: (value: number | "") => void;
+  tipoSerbatoio: 'standard' | 'speciale';
+  setTipoSerbatoio: (value: 'standard' | 'speciale') => void;
   settingsLimits: SettingsLimits;
 }
 
@@ -26,21 +28,50 @@ export default function TankDataPanel({
   setTemperatura,
   riempPerc,
   setRiempPerc,
+  tipoSerbatoio,
+  setTipoSerbatoio,
   settingsLimits
 }: TankDataPanelProps) {
   return (
     <div className="space-y-6">
       <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-200">
-        <h4 className="font-semibold text-blue-800 mb-6 text-lg">📊 Dati Serbatoio Completi</h4>
+        <h4 className="font-semibold text-blue-800 mb-4 text-lg">📊 Dati Serbatoio Completi</h4>
         
+        {/* Toggle per tipo serbatoio */}
+        <div className="mb-6">
+          <p className="text-blue-700 text-sm mb-2 font-medium">Tipo serbatoio</p>
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => setTipoSerbatoio('standard')}
+              className={`w-full py-2 px-4 rounded-lg font-medium transition-all ${
+                tipoSerbatoio === 'standard'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'bg-white text-blue-600 border border-blue-300 hover:bg-blue-50'
+              }`}
+            >
+              🔹 Standard
+            </button>
+            <button
+              onClick={() => setTipoSerbatoio('speciale')}
+              className={`w-full py-2 px-4 rounded-lg font-medium transition-all ${
+                tipoSerbatoio === 'speciale'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'bg-white text-blue-600 border border-blue-300 hover:bg-blue-50'
+              }`}
+            >
+              ⭐ Speciale
+            </button>
+          </div>
+        </div>
+
         <div className="space-y-6">
           {/* Pressione iniziale */}
           <div>
-            <p className="text-blue-700 text-sm mb-3 font-medium">Pressione iniziale P₀ [bar]</p>
+            <p className="text-blue-700 text-sm mb-2 font-medium">Pressione iniziale P₀ [bar]</p>
             <NumericInput
               value={P0}
               onChange={(v) => { setP0(v); setP_serb(v); }}
-              label="Pressione iniziale"
+              label=""
               unit="bar"
               min={settingsLimits.P0.min}
               max={settingsLimits.P0.max}
@@ -51,7 +82,7 @@ export default function TankDataPanel({
 
           {/* Capacità serbatoio */}
           <div>
-            <p className="text-blue-700 text-sm mb-3 font-medium">Capacità</p>
+            <p className="text-blue-700 text-sm mb-2 font-medium">Capacità</p>
             <NumericInput
               value={volumeProdotto || 0}
               onChange={setVolumeProdotto}
@@ -65,7 +96,7 @@ export default function TankDataPanel({
           
           {/* Temperatura serbatoio */}
           <div>
-            <p className="text-blue-700 text-sm mb-3 font-medium">Temperatura</p>
+            <p className="text-blue-700 text-sm mb-2 font-medium">Temperatura</p>
             <NumericInput
               value={temperatura || 0}
               onChange={setTemperatura}
@@ -77,9 +108,9 @@ export default function TankDataPanel({
             />
           </div>
           
-          {/* Percentuale riempimento */}
+          {/* Riempimento */}
           <div>
-            <p className="text-blue-700 text-sm mb-3 font-medium">Percentuale riempimento</p>
+            <p className="text-blue-700 text-sm mb-2 font-medium">Riempimento</p>
             <NumericInput
               value={riempPerc || 0}
               onChange={setRiempPerc}
