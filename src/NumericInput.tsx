@@ -82,13 +82,11 @@ export const NumericInput: React.FC<NumericInputProps> = ({
       <div className="relative">
         <input
           ref={inputRef}
-          type="number"
+          type="text"
+          inputMode="none"
           value={displayValue}
           onChange={handleDirectInput}
           onClick={handleInputClick}
-          step={step}
-          min={min}
-          max={max}
           placeholder={placeholder}
           disabled={disabled}
           className={`
@@ -99,7 +97,7 @@ export const NumericInput: React.FC<NumericInputProps> = ({
             ${disabled ? 'bg-slate-100 cursor-not-allowed' : 'bg-white cursor-pointer hover:border-blue-400'}
             ${className}
           `}
-          readOnly // Forza l'uso della tastiera virtuale
+          readOnly
         />
         
         {/* Unità di misura */}
@@ -110,7 +108,7 @@ export const NumericInput: React.FC<NumericInputProps> = ({
         )}
 
         {/* Icona tastiera */}
-        <button
+        {/*<button
           type="button"
           onClick={handleInputClick}
           disabled={disabled}
@@ -124,7 +122,7 @@ export const NumericInput: React.FC<NumericInputProps> = ({
           title="Apri tastiera numerica"
         >
           🧮
-        </button>
+        </button>*/}
       </div>
 
       {/* Indicatori range */}

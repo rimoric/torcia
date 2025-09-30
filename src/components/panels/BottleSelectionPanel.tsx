@@ -15,6 +15,8 @@ interface BottleSelectionPanelProps {
   setBombola2: (value: BottleConfig | ((prev: BottleConfig) => BottleConfig)) => void;
   bombola3: BottleConfig;
   setBombola3: (value: BottleConfig | ((prev: BottleConfig) => BottleConfig)) => void;
+  bombola4: BottleConfig;
+  setBombola4: (value: BottleConfig | ((prev: BottleConfig) => BottleConfig)) => void;
 }
 
 export default function BottleSelectionPanel({
@@ -23,7 +25,9 @@ export default function BottleSelectionPanel({
   bombola2,
   setBombola2,
   bombola3,
-  setBombola3
+  setBombola3,
+  bombola4,
+  setBombola4
 }: BottleSelectionPanelProps) {
   const BottleCard = ({ 
     bottle, 
@@ -48,12 +52,12 @@ export default function BottleSelectionPanel({
       {bottle.used && (
         <div className="space-y-3 pl-8">
           <div>
-            <label className="text-amber-700 text-sm font-medium">Pressione attuale [bar]</label>
+            <label className="text-amber-700 text-sm font-medium mb-2 block">Pressione [bar]</label>
             <NumericInput
               value={bottle.pressure}
               onChange={(v) => setBottle(prev => ({...prev, pressure: v}))}
-              label={`Pressione bombola ${index}`}
-              unit="bar"
+              label=""
+              unit=""
               min={0}
               max={300}
               decimals={0}
@@ -61,12 +65,12 @@ export default function BottleSelectionPanel({
             />
           </div>
           <div>
-            <label className="text-amber-700 text-sm font-medium">Capacità (volume) [L]</label>
+            <label className="text-amber-700 text-sm font-medium mb-2 block">Capacità [L]</label>
             <NumericInput
               value={bottle.volume}
               onChange={(v) => setBottle(prev => ({...prev, volume: v}))}
-              label={`Volume bombola ${index}`}
-              unit="L"
+              label=""
+              unit=""
               min={10}
               max={100}
               decimals={0}
@@ -78,7 +82,7 @@ export default function BottleSelectionPanel({
     </div>
   );
 
-  const usedBottles = [bombola1.used, bombola2.used, bombola3.used].filter(Boolean).length;
+  const usedBottles = [bombola1.used, bombola2.used, bombola3.used, bombola4.used].filter(Boolean).length;
 
   return (
     <div className="space-y-6">
@@ -89,11 +93,12 @@ export default function BottleSelectionPanel({
           <BottleCard bottle={bombola1} setBottle={setBombola1} index={1} />
           <BottleCard bottle={bombola2} setBottle={setBombola2} index={2} />
           <BottleCard bottle={bombola3} setBottle={setBombola3} index={3} />
+          <BottleCard bottle={bombola4} setBottle={setBombola4} index={4} />
         </div>
 
         <div className="mt-6 p-4 bg-amber-100 rounded-lg border border-amber-300">
           <p className="text-amber-800 text-sm font-medium">
-            Bombole selezionate: {usedBottles}/3
+            Bombole selezionate: {usedBottles}/4
           </p>
         </div>
       </div>

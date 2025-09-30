@@ -39,6 +39,7 @@ export default function App() {
   const [bombola1, setBombola1] = useState({ used: false, pressure: 180, volume: 50 });
   const [bombola2, setBombola2] = useState({ used: false, pressure: 180, volume: 50 });
   const [bombola3, setBombola3] = useState({ used: false, pressure: 180, volume: 50 });
+  const [bombola4, setBombola4] = useState({ used: false, pressure: 180, volume: 50 });
 
   // Initial checks
   const [setupVallenLoaded, setSetupVallenLoaded] = useState(false);
@@ -304,6 +305,8 @@ export default function App() {
             setBombola2={setBombola2}
             bombola3={bombola3}
             setBombola3={setBombola3}
+            bombola4={bombola4}
+            setBombola4={setBombola4}
           />
         );
       
