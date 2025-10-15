@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Menu } from "lucide-react";
 
+// i18n Support
+import { I18nProvider, useTranslation } from './i18n';
+
 // Components
 import Sidebar from './components/ui/Sidebar';
 import LogModal from './components/ui/LogModal';
@@ -24,9 +27,25 @@ import { useTimer } from './hooks/useTimer';
 import { useWarmup } from './hooks/useWarmup';
 
 // Types
-import { Fase, STEP_TITLES } from './types/process';
+import { Fase } from './types/process';
 
-export default function App() {
+// Componente interno che usa i18n
+function AppContent() {
+  const { t } = useTranslation();
+  
+  // Titoli dei passaggi dinamici basati sulla lingua
+  const STEP_TITLES = [
+    t('steps.tankData'),
+    t('steps.pressureTarget'),
+    t('steps.bottleSelection'),
+    t('steps.initialChecks'),
+    t('steps.generator'),
+    t('steps.utilities'),
+    t('steps.pressurization'),
+    t('steps.automaticProcess'),
+    t('steps.saveComplete')
+  ];
+
   // Tank parameters
   const [P0, setP0] = useState(1.0);
   const [volumeProdotto, setVolumeProdotto] = useState<number | "">("");
@@ -153,12 +172,12 @@ export default function App() {
     linkElement.setAttribute('download', exportFileDefaultName);
     linkElement.click();
     
-    pushLog(`Report esportato: ${exportFileDefaultName}`);
+    pushLog(`${t('messages.reportExported')}: ${exportFileDefaultName}`);
   };
 
   const handleSaveSettings = (newLimits: SettingsLimits) => {
     setSettingsLimits(newLimits);
-    pushLog("Impostazioni limiti salvate");
+    pushLog(t('messages.settingsSaved'));
     setSettingsOpen(false);
   };
 
@@ -166,18 +185,18 @@ export default function App() {
   const back = () => {
     if (uiStep > 0) {
       setUiStep(uiStep - 1);
-      pushLog(`Tornato al passo ${uiStep}.`);
+      pushLog(`${t('messages.backToStep')} ${uiStep}.`);
     }
   };
 
   const next = () => {
     if (uiStep < STEP_TITLES.length - 1) {
-      pushLog(`Passaggio al passo ${uiStep + 2}.`);
+      pushLog(`${t('messages.nextStep')} ${uiStep + 2}.`);
       setUiStep(uiStep + 1);
     } else {
       setProcessoCompletato(true);
       setSalvataggioRichiesto(true);
-      pushLog("Processo completato!");
+      pushLog(t('messages.processComplete'));
     }
   };
 
@@ -337,7 +356,7 @@ export default function App() {
             setGeRpm={setGeRpm}
             warmup={warmup}
             startWarmup={() => startWarmup(10, () => {
-              pushLog("Warm-up completato - GE pronto per 3000 rpm.");
+              pushLog(t('messages.warmupComplete'));
             })}
             pushLog={pushLog}
             settingsLimits={settingsLimits}
@@ -414,14 +433,14 @@ export default function App() {
         onOpenReports={() => {}}
         onOpenLog={() => setLogModalOpen(true)}
         onExportPDF={handleExportPDF}
-        onSave={() => pushLog("Configurazione salvata")}
-        onLoad={() => pushLog("Caricamento configurazione...")}
+        onSave={() => pushLog(t('messages.configSaved'))}
+        onLoad={() => pushLog(t('messages.loadingConfig'))}
         onPrint={() => window.print()}
-        onAbout={() => alert("HMI Pressurizzazione GPL v2.0")}
+        onAbout={() => alert(t('menu.hmiVersion'))}
       />
 
       <div className="lg:hidden bg-white border-b px-4 py-3 flex items-center justify-between">
-        <h1 className="text-lg font-semibold">Dashboard Torcia</h1>
+        <h1 className="text-lg font-semibold">{t('menu.dashboardTitle')}</h1>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setLogModalOpen(true)}
@@ -502,14 +521,14 @@ export default function App() {
                     onClick={back} 
                     disabled={uiStep === 0}
                   >
-                    ← Indietro
+                    ← {t('common.back')}
                   </button>
                   
                   <button 
                     className="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors text-sm" 
                     onClick={resetProcess}
                   >
-                    🔄 Reset
+                    🔄 {t('common.reset')}
                   </button>
                 </div>
                 
@@ -528,7 +547,10 @@ export default function App() {
                     <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 animate-pulse" />
                   )}
                   <span className="relative z-10">
-                    {uiStep === STEP_TITLES.length - 1 ? '🎯 Completa Processo' : '→ Continua'}
+                    {uiStep === STEP_TITLES.length - 1 
+                      ? `🎯 ${t('common.complete')}` 
+                      : `→ ${t('common.continue')}`
+                    }
                   </span>
                 </button>
               </div>
@@ -570,5 +592,14 @@ export default function App() {
         onSave={handleSaveSettings}
       />
     </div>
+  );
+}
+
+// Main App component con I18nProvider wrapper
+export default function App() {
+  return (
+    <I18nProvider>
+      <AppContent />
+    </I18nProvider>
   );
 }
