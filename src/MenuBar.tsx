@@ -5,6 +5,7 @@ import {
   Save, FolderOpen, Printer, Info, HelpCircle,
   Monitor, Database, RefreshCw, CheckCircle
 } from 'lucide-react';
+import { useTranslation, LanguageSelector } from './i18n';
 
 interface MenuBarProps {
   onOpenSettings: () => void;
