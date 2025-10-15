@@ -1,5 +1,6 @@
-// UtilitiesPanel.tsx - Step 5: Utilities Activation Component
+// UtilitiesPanel.tsx - Step 5: Utilities Activation (i18n)
 import React from 'react';
+import { useTranslation } from '../../i18n';
 
 interface UtilitiesPanelProps {
   allUtilitiesOn: boolean;
@@ -8,6 +9,7 @@ interface UtilitiesPanelProps {
   setEssiccatoreOn: (value: boolean) => void;
   setGenN2On: (value: boolean) => void;
   pushLog: (message: string) => void;
+  settingsLimits: any;
 }
 
 export default function UtilitiesPanel({
@@ -16,12 +18,17 @@ export default function UtilitiesPanel({
   setCompressoreOn,
   setEssiccatoreOn,
   setGenN2On,
-  pushLog
+  pushLog,
+  settingsLimits
 }: UtilitiesPanelProps) {
+  const { t } = useTranslation();
+  
   return (
     <div className="space-y-6">
       <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-6 rounded-xl border border-purple-200">
-        <h4 className="font-semibold text-purple-800 mb-6 text-lg">🔧 Attivare Utenze</h4>
+        <h4 className="font-semibold text-purple-800 mb-6 text-lg">
+          🔧 {t('utilities.title')}
+        </h4>
         
         <div className="space-y-4">
           <label className="flex items-center gap-4 cursor-pointer p-4 bg-white rounded-lg shadow-sm border hover:bg-purple-50 transition-colors">
@@ -35,16 +42,20 @@ export default function UtilitiesPanel({
                 setEssiccatoreOn(checked);
                 setGenN2On(checked);
                 if (checked) {
-                  pushLog("Tutte le utenze attivate: Compressore, Essiccatore, Generatore N₂");
+                  pushLog(t('messages.allUtilitiesOn'));
                 } else {
-                  pushLog("Tutte le utenze disattivate");
+                  pushLog(t('messages.allUtilitiesOff'));
                 }
               }}
               className="w-6 h-6"
             />
             <div>
-              <span className="text-purple-800 font-semibold text-lg">Attiva tutte le utenze</span>
-              <p className="text-purple-600 text-sm">Compressore • Essiccatore • Generatore N₂</p>
+              <span className="text-purple-800 font-semibold text-lg">
+                {t('utilities.activateAll')}
+              </span>
+              <p className="text-purple-600 text-sm">
+                {t('utilities.compressor')} • {t('utilities.dryer')} • {t('utilities.n2Generator')}
+              </p>
             </div>
           </label>
 
@@ -53,15 +64,15 @@ export default function UtilitiesPanel({
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div className="text-purple-800">
                   <div className="text-2xl">💨</div>
-                  <div className="text-sm font-medium">Compressore</div>
+                  <div className="text-sm font-medium">{t('utilities.compressor')}</div>
                 </div>
                 <div className="text-purple-800">
                   <div className="text-2xl">🌪️</div>
-                  <div className="text-sm font-medium">Essiccatore</div>
+                  <div className="text-sm font-medium">{t('utilities.dryer')}</div>
                 </div>
                 <div className="text-purple-800">
                   <div className="text-2xl">🔷</div>
-                  <div className="text-sm font-medium">Generatore N₂</div>
+                  <div className="text-sm font-medium">{t('utilities.n2Generator')}</div>
                 </div>
               </div>
             </div>

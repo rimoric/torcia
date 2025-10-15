@@ -1,6 +1,7 @@
-// AutomaticProcessPanel.tsx - Step 7: Automatic Process and Shutdown Component
+// AutomaticProcessPanel.tsx - Step 7: Automatic Process (i18n)
 import React from 'react';
 import { Fase } from '../../types/process';
+import { useTranslation } from '../../i18n';
 
 interface ChecklistItems {
   pressioni: boolean;
@@ -26,6 +27,7 @@ interface AutomaticProcessPanelProps {
   checklistItems: ChecklistItems;
   setChecklistItems: (value: ChecklistItems | ((prev: ChecklistItems) => ChecklistItems)) => void;
   pushLog: (message: string) => void;
+  settingsLimits: any;
 }
 
 export default function AutomaticProcessPanel({
@@ -42,12 +44,17 @@ export default function AutomaticProcessPanel({
   setGeRpm,
   checklistItems,
   setChecklistItems,
-  pushLog
+  pushLog,
+  settingsLimits
 }: AutomaticProcessPanelProps) {
+  const { t } = useTranslation();
+  
   return (
     <div className="space-y-6">
       <div className="bg-gradient-to-br from-slate-50 to-gray-50 p-6 rounded-xl border border-slate-200">
-        <h4 className="font-semibold text-slate-800 mb-6 text-lg">🔄 Processo Automatico e Spegnimento</h4>
+        <h4 className="font-semibold text-slate-800 mb-6 text-lg">
+          🔄 {t('automaticProcess.title')}
+        </h4>
         
         <div className="space-y-4">
           {/* Start automatic process */}
@@ -55,13 +62,13 @@ export default function AutomaticProcessPanel({
             <button
               onClick={() => {
                 setProcessoAutomaticoStarted(true);
-                startTimer(30); // Simulated combined process time
+                startTimer(30);
                 setFase("Stasi");
-                pushLog("Avviato processo automatico: Stasi → Depressurizzazione → Scarico linee → Scarico generatore");
+                pushLog(t('messages.automaticProcessStarted'));
               }}
               className="w-full px-6 py-4 bg-gradient-to-r from-slate-600 to-slate-700 text-white rounded-lg hover:from-slate-700 hover:to-slate-800 transition-all duration-200 font-semibold shadow-lg"
             >
-              🚀 AVVIA Processo Automatico
+              🚀 {t('automaticProcess.startAutomatic')}
             </button>
           )}
 
@@ -69,8 +76,12 @@ export default function AutomaticProcessPanel({
           {processoAutomaticoStarted && !processoAutomaticoCompleto && (
             <div className="space-y-3">
               <div className="text-center">
-                <p className="text-slate-700 font-semibold">Processo automatico in corso...</p>
-                <p className="text-sm text-slate-600">{timer}s rimanenti</p>
+                <p className="text-slate-700 font-semibold">
+                  {t('automaticProcess.inProgress')}
+                </p>
+                <p className="text-sm text-slate-600">
+                  {timer}{t('common.seconds')} {t('generator.remaining')}
+                </p>
               </div>
               <div className="w-full bg-slate-200 rounded-full h-4 shadow-inner">
                 <div 
@@ -79,10 +90,10 @@ export default function AutomaticProcessPanel({
                 />
               </div>
               <div className="text-xs text-slate-600 space-y-1">
-                <div>• Stasi stabilizzazione pressione</div>
-                <div>• Depressurizzazione automatica verso torcia</div>
-                <div>• Scarico automatico linee</div>
-                <div>• Scarico linea generatore</div>
+                <div>• {t('automaticProcess.stasis')}</div>
+                <div>• {t('automaticProcess.depressurization')}</div>
+                <div>• {t('automaticProcess.lineDrain')}</div>
+                <div>• {t('automaticProcess.generatorDrain')}</div>
               </div>
             </div>
           )}
@@ -93,11 +104,11 @@ export default function AutomaticProcessPanel({
               <button
                 onClick={() => {
                   setProcessoAutomaticoCompleto(true);
-                  pushLog("Processo automatico completato");
+                  pushLog(t('messages.automaticProcessComplete'));
                 }}
                 className="w-full px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-semibold"
               >
-                ✅ Conferma Processo Completato
+                ✅ {t('automaticProcess.confirmComplete')}
               </button>
             </div>
           )}
@@ -106,18 +117,20 @@ export default function AutomaticProcessPanel({
           {processoAutomaticoCompleto && !geShutdownDone && (
             <div className="space-y-3">
               <div className="text-center p-3 bg-green-100 rounded-lg border border-green-400">
-                <p className="text-green-800 font-semibold">✅ Processo automatico completato</p>
+                <p className="text-green-800 font-semibold">
+                  ✅ {t('automaticProcess.processComplete')}
+                </p>
               </div>
               <button
                 onClick={() => {
                   setGeShutdownDone(true);
                   setGeOn(false);
                   setGeRpm(0);
-                  pushLog("Gruppo Elettrogeno spento");
+                  pushLog(t('messages.geShutdown'));
                 }}
                 className="w-full px-6 py-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 font-semibold shadow-lg"
               >
-                🛑 SPEGNI Gruppo Elettrogeno
+                🛑 {t('automaticProcess.shutdownGE')}
               </button>
             </div>
           )}
@@ -125,15 +138,21 @@ export default function AutomaticProcessPanel({
           {/* All done */}
           {geShutdownDone && (
             <div className="text-center p-4 bg-blue-100 rounded-lg border border-blue-400">
-              <p className="text-blue-800 font-bold text-lg">🎯 Processo Completato</p>
-              <p className="text-blue-600 text-sm">Tutte le operazioni automatiche completate e GE spento</p>
+              <p className="text-blue-800 font-bold text-lg">
+                🎯 {t('automaticProcess.allComplete')}
+              </p>
+              <p className="text-blue-600 text-sm">
+                {t('automaticProcess.allOpsComplete')}
+              </p>
             </div>
           )}
 
           {/* Final checklist */}
           {geShutdownDone && (
             <div className="mt-6 p-4 bg-slate-100 rounded-lg border border-slate-300">
-              <h5 className="font-semibold text-slate-700 mb-3">Checklist finale - Verificare:</h5>
+              <h5 className="font-semibold text-slate-700 mb-3">
+                {t('automaticProcess.finalChecklist')}
+              </h5>
               <div className="grid grid-cols-1 gap-2 text-sm text-slate-600">
                 <div className="flex items-center gap-2">
                   <input 
@@ -141,7 +160,7 @@ export default function AutomaticProcessPanel({
                     checked={checklistItems.pressioni} 
                     onChange={(e) => setChecklistItems(prev => ({...prev, pressioni: e.target.checked}))} 
                   />
-                  <span>📊 Pressioni = 0</span>
+                  <span>📊 {t('automaticProcess.checkPressures')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <input 
@@ -149,7 +168,7 @@ export default function AutomaticProcessPanel({
                     checked={checklistItems.valvole} 
                     onChange={(e) => setChecklistItems(prev => ({...prev, valvole: e.target.checked}))} 
                   />
-                  <span>🔧 Tutte le valvole chiuse</span>
+                  <span>🔧 {t('automaticProcess.checkValves')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <input 
@@ -157,7 +176,7 @@ export default function AutomaticProcessPanel({
                     checked={checklistItems.torcia} 
                     onChange={(e) => setChecklistItems(prev => ({...prev, torcia: e.target.checked}))} 
                   />
-                  <span>🔥 Torcia smontata e riposta</span>
+                  <span>🔥 {t('automaticProcess.checkTorch')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <input 
@@ -165,7 +184,7 @@ export default function AutomaticProcessPanel({
                     checked={checklistItems.bombole} 
                     onChange={(e) => setChecklistItems(prev => ({...prev, bombole: e.target.checked}))} 
                   />
-                  <span>🗜️ Bombole chiuse</span>
+                  <span>🗜️ {t('automaticProcess.checkBottles')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <input 
@@ -173,7 +192,7 @@ export default function AutomaticProcessPanel({
                     checked={checklistItems.utenze} 
                     onChange={(e) => setChecklistItems(prev => ({...prev, utenze: e.target.checked}))} 
                   />
-                  <span>⚡ Utenze spente</span>
+                  <span>⚡ {t('automaticProcess.checkUtilities')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <input 
@@ -181,7 +200,7 @@ export default function AutomaticProcessPanel({
                     checked={checklistItems.strumenti} 
                     onChange={(e) => setChecklistItems(prev => ({...prev, strumenti: e.target.checked}))} 
                   />
-                  <span>🔋 Vallen/PLC/monitor spenti; batteria disattivata</span>
+                  <span>📋 {t('automaticProcess.checkInstruments')}</span>
                 </div>
               </div>
             </div>

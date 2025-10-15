@@ -1,6 +1,7 @@
-// BottleSelectionPanel.tsx - Step 2: Bottle Selection Component
+// BottleSelectionPanel.tsx - Step 2: Bottle Selection (i18n)
 import React from 'react';
 import NumericInput from '../../NumericInput';
+import { useTranslation } from '../../i18n';
 
 interface BottleConfig {
   used: boolean;
@@ -29,6 +30,8 @@ export default function BottleSelectionPanel({
   bombola4,
   setBombola4
 }: BottleSelectionPanelProps) {
+  const { t } = useTranslation();
+  
   const BottleCard = ({ 
     bottle, 
     setBottle, 
@@ -46,13 +49,17 @@ export default function BottleSelectionPanel({
           onChange={(e) => setBottle(prev => ({...prev, used: e.target.checked}))}
           className="w-5 h-5"
         />
-        <h5 className="font-semibold text-amber-800">Bombola {index}</h5>
+        <h5 className="font-semibold text-amber-800">
+          {t('bottleSelection.bottle')} {index}
+        </h5>
       </div>
       
       {bottle.used && (
         <div className="space-y-3 pl-8">
           <div>
-            <label className="text-amber-700 text-sm font-medium mb-2 block">Pressione [bar]</label>
+            <label className="text-amber-700 text-sm font-medium mb-2 block">
+              {t('bottleSelection.pressure')} [{t('common.bar')}]
+            </label>
             <NumericInput
               value={bottle.pressure}
               onChange={(v) => setBottle(prev => ({...prev, pressure: v}))}
@@ -65,7 +72,9 @@ export default function BottleSelectionPanel({
             />
           </div>
           <div>
-            <label className="text-amber-700 text-sm font-medium mb-2 block">Capacità [L]</label>
+            <label className="text-amber-700 text-sm font-medium mb-2 block">
+              {t('bottleSelection.capacity')} [{t('common.liters')}]
+            </label>
             <NumericInput
               value={bottle.volume}
               onChange={(v) => setBottle(prev => ({...prev, volume: v}))}
@@ -87,7 +96,9 @@ export default function BottleSelectionPanel({
   return (
     <div className="space-y-6">
       <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-6 rounded-xl border border-amber-200">
-        <h4 className="font-semibold text-amber-800 mb-6 text-lg">🗜️ Scelta Bombole</h4>
+        <h4 className="font-semibold text-amber-800 mb-6 text-lg">
+          🗜️ {t('bottleSelection.title')}
+        </h4>
         
         <div className="space-y-6">
           <BottleCard bottle={bombola1} setBottle={setBombola1} index={1} />
@@ -98,7 +109,7 @@ export default function BottleSelectionPanel({
 
         <div className="mt-6 p-4 bg-amber-100 rounded-lg border border-amber-300">
           <p className="text-amber-800 text-sm font-medium">
-            Bombole selezionate: {usedBottles}/4
+            {t('bottleSelection.selected')}: {usedBottles}/4
           </p>
         </div>
       </div>

@@ -1,5 +1,6 @@
-// GeneratorPanel.tsx - Step 4: Generator Startup Component
+// GeneratorPanel.tsx - Step 4: Generator Startup (i18n)
 import React from 'react';
+import { useTranslation } from '../../i18n';
 
 interface GeneratorPanelProps {
   geStarted: boolean;
@@ -13,6 +14,7 @@ interface GeneratorPanelProps {
   warmup: number;
   startWarmup: () => void;
   pushLog: (message: string) => void;
+  settingsLimits: any;
 }
 
 export default function GeneratorPanel({
@@ -26,12 +28,17 @@ export default function GeneratorPanel({
   setGeRpm,
   warmup,
   startWarmup,
-  pushLog
+  pushLog,
+  settingsLimits
 }: GeneratorPanelProps) {
+  const { t } = useTranslation();
+  
   return (
     <div className="space-y-6">
       <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-200">
-        <h4 className="font-semibold text-blue-800 mb-6 text-lg">⚡ Gruppo Elettrogeno</h4>
+        <h4 className="font-semibold text-blue-800 mb-6 text-lg">
+          ⚡ {t('generator.title')}
+        </h4>
         
         <div className="space-y-4">
           {/* Start button */}
@@ -41,11 +48,11 @@ export default function GeneratorPanel({
                 setGeStarted(true);
                 setGeRpm(1500);
                 startWarmup();
-                pushLog("GE avviato a 1500 giri/min - Iniziato riscaldamento");
+                pushLog(t('messages.geStarted'));
               }}
               className="w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 font-semibold shadow-lg"
             >
-              🚀 START - Avvia Gruppo Elettrogeno
+              🚀 {t('common.start')} - {t('generator.startGE')}
             </button>
           )}
 
@@ -53,8 +60,12 @@ export default function GeneratorPanel({
           {geStarted && !geWarmupComplete && (
             <div className="space-y-3">
               <div className="text-center">
-                <p className="text-blue-700 font-semibold">GE a 1500 giri/min - Riscaldamento in corso</p>
-                <p className="text-sm text-blue-600">{warmup}s rimanenti</p>
+                <p className="text-blue-700 font-semibold">
+                  GE a 1500 {t('common.rpm')} - {t('generator.warming')}
+                </p>
+                <p className="text-sm text-blue-600">
+                  {warmup}{t('common.seconds')} {t('generator.remaining')}
+                </p>
               </div>
               <div className="w-full bg-blue-200 rounded-full h-6 shadow-inner">
                 <div 
@@ -65,7 +76,7 @@ export default function GeneratorPanel({
                 </div>
               </div>
               <div className="text-center text-xs text-blue-600">
-                Progresso riscaldamento: {Math.round(((10 - warmup) / 10) * 100)}%
+                {t('generator.progress')}: {Math.round(((10 - warmup) / 10) * 100)}%
               </div>
             </div>
           )}
@@ -74,18 +85,20 @@ export default function GeneratorPanel({
           {geStarted && warmup === 0 && !geOperational && (
             <div className="space-y-3">
               <div className="text-center p-3 bg-green-100 rounded-lg border border-green-400">
-                <p className="text-green-800 font-semibold">Riscaldamento completato</p>
+                <p className="text-green-800 font-semibold">
+                  {t('generator.warmupComplete')}
+                </p>
               </div>
               <button
                 onClick={() => {
                   setGeRpm(3000);
                   setGeOperational(true);
                   setGeWarmupComplete(true);
-                  pushLog("GE portato a 3000 giri/min - Regime operativo");
+                  pushLog(t('messages.ge3000rpm'));
                 }}
                 className="w-full px-6 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 font-semibold shadow-lg"
               >
-                ⚡ Funzionamento 3000 giri/min
+                ⚡ {t('generator.operational3000')}
               </button>
             </div>
           )}
@@ -93,8 +106,12 @@ export default function GeneratorPanel({
           {/* Operational status */}
           {geOperational && (
             <div className="text-center p-4 bg-green-100 rounded-lg border border-green-400">
-              <p className="text-green-800 font-bold text-lg">✅ GE Operativo a 3000 giri/min</p>
-              <p className="text-green-600 text-sm">Pronto per il passo successivo</p>
+              <p className="text-green-800 font-bold text-lg">
+                ✅ {t('generator.operationalStatus')}
+              </p>
+              <p className="text-green-600 text-sm">
+                {t('generator.readyNextStep')}
+              </p>
             </div>
           )}
         </div>
