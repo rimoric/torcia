@@ -1,4 +1,4 @@
-// MenuBar.tsx - Menu bar stile applicazioni desktop
+// MenuBar.tsx - Menu bar con supporto multilingua (VERSIONE CORRETTA)
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   Settings, FileText, Download, BarChart3, 
@@ -42,6 +42,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({
 }) => {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation();
 
   // Chiudi menu quando clicchi fuori
   useEffect(() => {
@@ -57,44 +58,44 @@ export const MenuBar: React.FC<MenuBarProps> = ({
 
   const menus: MenuDropdown[] = [
     {
-      label: 'File',
+      label: t('menu.file'),
       items: [
-        { label: 'Nuovo Processo', icon: RefreshCw, onClick: () => window.location.reload(), shortcut: 'Ctrl+N' },
-        { label: 'Apri...', icon: FolderOpen, onClick: onLoad, shortcut: 'Ctrl+O' },
-        { label: 'Salva', icon: Save, onClick: onSave, shortcut: 'Ctrl+S' },
+        { label: t('menu.newProcess'), icon: RefreshCw, onClick: () => window.location.reload(), shortcut: 'Ctrl+N' },
+        { label: t('menu.open'), icon: FolderOpen, onClick: onLoad, shortcut: 'Ctrl+O' },
+        { label: t('menu.save'), icon: Save, onClick: onSave, shortcut: 'Ctrl+S' },
         { separator: true, label: '', onClick: () => {} },
-        { label: 'Esporta PDF', icon: Download, onClick: onExportPDF, shortcut: 'Ctrl+E' },
-        { label: 'Stampa', icon: Printer, onClick: onPrint, shortcut: 'Ctrl+P' },
+        { label: t('menu.exportPDF'), icon: Download, onClick: onExportPDF, shortcut: 'Ctrl+E' },
+        { label: t('menu.print'), icon: Printer, onClick: onPrint, shortcut: 'Ctrl+P' },
         { separator: true, label: '', onClick: () => {} },
-        { label: 'Esci', icon: undefined, onClick: () => window.close(), shortcut: 'Alt+F4' }
+        { label: t('menu.exit'), icon: undefined, onClick: () => window.close(), shortcut: 'Alt+F4' }
       ]
     },
     {
-      label: 'Visualizza',
+      label: t('menu.view'),
       items: [
-        { label: 'Log Eventi', icon: FileText, onClick: onOpenLog, shortcut: 'Ctrl+L' },
-        { label: 'Report Sistema', icon: BarChart3, onClick: onOpenReports, shortcut: 'Ctrl+R' },
+        { label: t('menu.logEvents'), icon: FileText, onClick: onOpenLog, shortcut: 'Ctrl+L' },
+        { label: t('menu.systemReports'), icon: BarChart3, onClick: onOpenReports, shortcut: 'Ctrl+R' },
         { separator: true, label: '', onClick: () => {} },
-        { label: 'Schema P&ID', icon: Monitor, onClick: () => {}, shortcut: 'F2', disabled: true },
-        { label: 'Aggiorna Dati', icon: RefreshCw, onClick: () => window.location.reload(), shortcut: 'F5' }
+        { label: t('menu.pidSchema'), icon: Monitor, onClick: () => {}, shortcut: 'F2', disabled: true },
+        { label: t('menu.refreshData'), icon: RefreshCw, onClick: () => window.location.reload(), shortcut: 'F5' }
       ]
     },
     {
-      label: 'Strumenti',
+      label: t('menu.tools'),
       items: [
-        { label: 'Impostazioni', icon: Settings, onClick: onOpenSettings, shortcut: 'Ctrl+,' },
-        { label: 'Calibrazione', icon: CheckCircle, onClick: () => {}, shortcut: 'Ctrl+K', disabled: true },
+        { label: t('menu.settings'), icon: Settings, onClick: onOpenSettings, shortcut: 'Ctrl+,' },
+        { label: t('menu.calibration'), icon: CheckCircle, onClick: () => {}, shortcut: 'Ctrl+K', disabled: true },
         { separator: true, label: '', onClick: () => {} },
-        { label: 'Database Config', icon: Database, onClick: () => {}, disabled: true }
+        { label: t('menu.databaseConfig'), icon: Database, onClick: () => {}, disabled: true }
       ]
     },
     {
-      label: 'Aiuto',
+      label: t('menu.help'),
       items: [
-        { label: 'Manuale Utente', icon: HelpCircle, onClick: () => {}, shortcut: 'F1' },
-        { label: 'Guida Rapida', icon: Info, onClick: () => {} },
+        { label: t('menu.userManual'), icon: HelpCircle, onClick: () => {}, shortcut: 'F1' },
+        { label: t('menu.quickGuide'), icon: Info, onClick: () => {} },
         { separator: true, label: '', onClick: () => {} },
-        { label: 'Info Sistema', icon: Info, onClick: onAbout }
+        { label: t('menu.systemInfo'), icon: Info, onClick: onAbout }
       ]
     }
   ];
@@ -120,7 +121,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({
             <div className="w-6 h-6 bg-white/20 rounded flex items-center justify-center">
               <Settings className="w-4 h-4" />
             </div>
-            <span className="font-bold text-sm">HMI Torcia</span>
+            <span className="font-bold text-sm">{t('menu.dashboardTitle')}</span>
           </div>
         </div>
 
@@ -185,12 +186,21 @@ export const MenuBar: React.FC<MenuBarProps> = ({
           ))}
         </div>
 
-        {/* Status Area */}
+        {/* Status Area & Language Selector */}
         <div className="ml-auto px-4 py-2 flex items-center gap-4 text-sm text-gray-600">
+          {/* Language Selector - Direct buttons */}
+          <LanguageSelector />
+
+          {/* Separator */}
+          <div className="h-6 w-px bg-gray-300"></div>
+
+          {/* System Status */}
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span>Sistema Attivo</span>
+            <span>{t('menu.systemActive')}</span>
           </div>
+          
+          {/* Clock */}
           <div className="text-gray-400">
             {new Date().toLocaleTimeString()}
           </div>
